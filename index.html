@@ -915,6 +915,9 @@ async function extract() {
 
     const res = await fetch(`${BACKEND}/api/extract`, {
       method: 'POST',
+      headers: {
+        'x-api-key': 'billscan2025secure'
+      },
       body: formData
     });
 
