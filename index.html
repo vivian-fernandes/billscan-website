@@ -900,9 +900,8 @@ function clearFile() {
 
 // ── EXTRACTION ──
 const BACKEND = "https://billscan-backend-production.up.railway.app";
+
 async function extract() {
-  const key = savedKey || document.getElementById('apiKey').value.trim();
-  if (!key) { showErr('Please enter your Gemini API key first.'); return; }
   if (!currentFile) { showErr('Please select an invoice file.'); return; }
 
   hideErr();
@@ -911,37 +910,23 @@ async function extract() {
   document.getElementById('resultsBox').classList.remove('show');
 
   try {
-    const b64 = await toBase64(currentFile);
-    const mime = currentFile.type || 'image/jpeg';
+    const formData = new FormData();
+    formData.append('invoice', currentFile);
 
-    const prompt = `You are a GST invoice data extractor for India. Extract all fields and return ONLY valid JSON, no markdown.
-Return: {"vendor":{"name":null,"gstin":null,"address":null,"phone":null},"buyer":{"name":null,"gstin":null,"address":null},"invoice":{"number":null,"date":null,"due_date":null,"place_of_supply":null},"line_items":[{"description":null,"hsn_sac":null,"quantity":null,"rate":null,"amount":null}],"taxes":{"subtotal":null,"cgst":null,"sgst":null,"igst":null,"total_tax":null,"grand_total":null,"total_in_words":null},"confidence":90}`;
-
-    const body = {
-      contents:[{ parts:[
-        { inline_data:{ mime_type: mime, data: b64 } },
-        { text: prompt }
-      ]}],
-      generationConfig:{ temperature:0.1, maxOutputTokens:2048 }
-    };
-
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
-      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }
-    );
+    const res = await fetch(`${BACKEND}/api/extract`, {
+      method: 'POST',
+      body: formData
+    });
 
     if (!res.ok) {
-      const e = await res.json();
-      throw new Error(e.error?.message || 'Gemini API error ' + res.status);
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Server error ' + res.status);
     }
 
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const clean = text.replace(/```json|```/g,'').trim();
-    const s = clean.indexOf('{'), e2 = clean.lastIndexOf('}');
-    if (s < 0) throw new Error('No data extracted — try a clearer image');
-    extractedData = JSON.parse(clean.substring(s, e2+1));
+    const result = await res.json();
+    if (!result.success) throw new Error(result.error || 'Extraction failed');
 
+    extractedData = result.data;
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display = 'block';
     renderResults(extractedData);
