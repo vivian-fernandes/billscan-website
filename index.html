@@ -434,7 +434,7 @@ let isAuthed = false;
 let currentFile = null;
 let extractedData = null;
 
-function show(p) { document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); window.scrollTo(0,0); }
+function show(p) { document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); window.scrollTo(0,0); if(typeof gtag !== 'undefined') gtag('event', 'page_view', {page_title: p, page_location: window.location.href + '#' + p}); }
 
 function updateUI() {
   const lbl = document.getElementById('attemptsLabel');
