@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BillScan AI — GST Invoice Extractor for CA Firms</title>
+<meta name="description" content="Upload any GST invoice — PDF, photo, WhatsApp screenshot. AI extracts every field in seconds. Tally-ready CSV. Used by CA firms across India.">
+<meta property="og:title" content="BillScan AI — GST Invoice Extractor">
+<meta property="og:description" content="3–4 days of manual invoice entry → 10 minutes. AI reads every GST field instantly.">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0b;
+  --surface: #141412;
+  --surface2: #1c1c19;
+  --border: #2a2a24;
+  --text: #e8e5dc;
+  --muted: #7a7868;
+  --accent: #c8f044;
+  --accent-dark: #9ec034;
+  --accent2: #44d4a4;
+  --danger: #e85c3a;
+  --gold: #f0c060;
+  --r: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior: smooth; }
+body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; font-size:16px; overflow-x:hidden; }
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px;
+  background:rgba(13,13,11,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo { font-size:20px; font-weight:800; letter-spacing:-0.02em; }
+.nav-logo span { color:var(--accent); }
+.nav-links { display:flex; align-items:center; gap:6px; }
+.nav-link {
+  padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600;
+  color:var(--muted); text-decoration:none; cursor:pointer; border:none;
+  background:none; font-family:'Syne',sans-serif; transition:color 0.15s;
+}
+.nav-link:hover { color:var(--text); }
+.nav-cta {
+  background:var(--accent); color:#0d0d0b; border-radius:8px;
+  padding:8px 18px; font-size:13px; font-weight:700; cursor:pointer;
+  border:none; font-family:'Syne',sans-serif; transition:background 0.15s;
+}
+.nav-cta:hover { background:var(--accent-dark); }
+
+/* ── PAGES ── */
+.page { display:none; padding-top:64px; min-height:100vh; }
+.page.active { display:block; }
+
+/* ── HERO ── */
+.hero {
+  padding:80px 20px 60px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before {
+  content:'';
+  position:absolute; top:-100px; left:50%; transform:translateX(-50%);
+  width:600px; height:600px;
+  background:radial-gradient(circle, rgba(200,240,68,0.07) 0%, transparent 65%);
+  pointer-events:none;
+}
+.hero-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(200,240,68,0.1); color:var(--accent);
+  border:1px solid rgba(200,240,68,0.2);
+  border-radius:20px; padding:6px 14px;
+  font-size:12px; font-weight:600; letter-spacing:0.05em;
+  margin-bottom:24px;
+}
+.hero-title {
+  font-size:clamp(38px,10vw,72px);
+  font-weight:800; line-height:1.0;
+  letter-spacing:-0.03em;
+  margin-bottom:20px;
+}
+.hero-title em { color:var(--accent); font-style:italic; font-family:'Lora',serif; }
+.hero-sub {
+  font-size:clamp(15px,4vw,19px);
+  color:var(--muted); line-height:1.6;
+  max-width:480px; margin:0 auto 36px;
+  font-weight:400;
+}
+.hero-actions { display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:48px; }
+.btn-primary {
+  background:var(--accent); color:#0d0d0b;
+  padding:16px 32px; border-radius:10px;
+  font-size:16px; font-weight:800;
+  cursor:pointer; border:none; font-family:'Syne',sans-serif;
+  transition:all 0.15s; width:100%; max-width:320px;
+  letter-spacing:0.01em;
+}
+.btn-primary:hover { background:var(--accent-dark); transform:translateY(-1px); }
+.btn-ghost {
+  background:none; color:var(--muted);
+  padding:14px 28px; border-radius:10px;
+  font-size:14px; font-weight:600;
+  cursor:pointer; border:1px solid var(--border); font-family:'Syne',sans-serif;
+  transition:all 0.15s; width:100%; max-width:320px;
+}
+.btn-ghost:hover { color:var(--text); border-color:var(--muted); }
+
+/* ── TRUST STRIP ── */
+.trust-strip {
+  display:flex; justify-content:center; flex-wrap:wrap; gap:20px;
+  padding:0 20px 60px;
+}
+.trust-item {
+  display:flex; align-items:center; gap:8px;
+  font-size:13px; color:var(--muted);
+}
+.trust-dot { width:6px; height:6px; border-radius:50%; background:var(--accent2); }
+
+/* ── SOCIAL PROOF ── */
+.social-strip {
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:24px 20px;
+  text-align:center;
+}
+.social-strip p { font-size:13px; color:var(--muted); margin-bottom:16px; letter-spacing:0.05em; text-transform:uppercase; }
+.stat-row { display:flex; justify-content:center; gap:0; max-width:480px; margin:0 auto; }
+.stat-item { flex:1; padding:12px; border-right:1px solid var(--border); }
+.stat-item:last-child { border-right:none; }
+.stat-num { font-size:28px; font-weight:800; color:var(--accent); display:block; }
+.stat-lbl { font-size:11px; color:var(--muted); margin-top:3px; }
+
+/* ── HOW IT WORKS ── */
+.section { padding:60px 20px; max-width:640px; margin:0 auto; }
+.section-label { font-size:11px; color:var(--accent); letter-spacing:0.15em; text-transform:uppercase; font-weight:600; margin-bottom:12px; }
+.section-title { font-size:clamp(26px,7vw,40px); font-weight:800; line-height:1.1; letter-spacing:-0.02em; margin-bottom:36px; }
+.section-title em { font-style:italic; font-family:'Lora',serif; color:var(--accent2); }
+
+.steps { display:flex; flex-direction:column; gap:0; }
+.step {
+  display:flex; gap:16px;
+  padding:20px 0;
+  border-bottom:1px solid var(--border);
+}
+.step:last-child { border-bottom:none; }
+.step-num {
+  width:40px; height:40px; border-radius:50%;
+  background:rgba(200,240,68,0.1);
+  border:1px solid rgba(200,240,68,0.2);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:15px; color:var(--accent);
+  flex-shrink:0;
+}
+.step-title { font-weight:700; font-size:16px; margin-bottom:6px; }
+.step-desc { color:var(--muted); font-size:14px; line-height:1.6; }
+
+/* ── DEMO ── */
+.demo-section { padding:0 20px 60px; max-width:640px; margin:0 auto; }
+.demo-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+}
+.demo-header {
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+.demo-dots span {
+  display:inline-block; width:10px; height:10px;
+  border-radius:50%; margin-right:5px;
+}
+.demo-dots .r { background:#e85c3a; }
+.demo-dots .y { background:#f0c060; }
+.demo-dots .g { background:var(--accent); }
+.demo-title { font-size:13px; color:var(--muted); font-family:'DM Mono',monospace; }
+
+.demo-body { padding:24px 20px; }
+
+/* API KEY INPUT */
+.key-row {
+  display:flex; gap:8px; margin-bottom:20px; align-items:stretch;
+}
+.key-input {
+  flex:1; background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:12px 14px;
+  color:var(--text); font-family:'DM Mono',monospace; font-size:12px;
+  outline:none; transition:border 0.15s;
+}
+.key-input:focus { border-color:var(--accent); }
+.key-input::placeholder { color:var(--muted); }
+.key-save-btn {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:12px 16px;
+  color:var(--muted); font-size:12px; font-weight:600;
+  cursor:pointer; font-family:'Syne',sans-serif; white-space:nowrap;
+  transition:all 0.15s;
+}
+.key-save-btn:hover { color:var(--accent); border-color:var(--accent); }
+.key-notice {
+  font-size:11px; color:var(--muted); margin-bottom:20px;
+  display:flex; align-items:flex-start; gap:6px; line-height:1.5;
+}
+.key-notice::before { content:'🔒'; flex-shrink:0; }
+
+/* UPLOAD */
+.upload-zone {
+  border:2px dashed var(--border); border-radius:12px;
+  padding:32px 20px; text-align:center; cursor:pointer;
+  transition:all 0.2s; margin-bottom:16px;
+}
+.upload-zone:hover, .upload-zone.drag { border-color:var(--accent); background:rgba(200,240,68,0.04); }
+.upload-icon { font-size:32px; margin-bottom:10px; }
+.upload-title { font-weight:700; font-size:15px; margin-bottom:6px; }
+.upload-sub { font-size:13px; color:var(--muted); margin-bottom:14px; }
+.upload-btn-sm {
+  display:inline-block; background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600;
+  cursor:pointer; color:var(--text); font-family:'Syne',sans-serif;
+  transition:background 0.15s;
+}
+.upload-btn-sm:hover { background:var(--border); }
+
+.file-pill {
+  display:none; align-items:center; gap:10px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:10px 14px; margin-bottom:14px;
+}
+.file-pill.show { display:flex; }
+.file-pill-name { flex:1; font-size:13px; font-family:'DM Mono',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.file-pill-rm { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; }
+
+.extract-btn-main {
+  width:100%; padding:15px; background:var(--accent); color:#0d0d0b;
+  border:none; border-radius:10px; font-size:15px; font-weight:800;
+  font-family:'Syne',sans-serif; cursor:pointer; transition:all 0.15s;
+  letter-spacing:0.01em; margin-bottom:12px;
+}
+.extract-btn-main:disabled { background:var(--border); color:var(--muted); cursor:not-allowed; }
+.extract-btn-main:not(:disabled):hover { background:var(--accent-dark); }
+
+/* SECURITY NOTICE */
+.security-note {
+  display:flex; gap:8px; align-items:flex-start;
+  background:rgba(68,212,164,0.06);
+  border:1px solid rgba(68,212,164,0.15);
+  border-radius:8px; padding:12px 14px;
+  font-size:12px; color:var(--accent2); line-height:1.5;
+}
+.security-note strong { display:block; margin-bottom:3px; }
+
+/* PROCESSING */
+.proc-box { display:none; text-align:center; padding:28px 20px; }
+.proc-box.show { display:block; }
+.spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 14px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.proc-text { font-weight:700; margin-bottom:6px; }
+.proc-sub { font-size:13px; color:var(--muted); }
+
+/* RESULTS */
+.results-box { display:none; }
+.results-box.show { display:block; }
+.result-section { margin-bottom:16px; }
+.result-section-title {
+  font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
+  color:var(--muted); font-weight:600; margin-bottom:10px; padding:0 2px;
+}
+.result-grid { display:flex; flex-direction:column; gap:1px; background:var(--border); border-radius:10px; overflow:hidden; }
+.result-row { display:flex; background:var(--surface2); padding:10px 14px; gap:12px; }
+.result-key { font-size:12px; color:var(--muted); flex:0 0 120px; padding-top:1px; }
+.result-val { font-size:13px; font-weight:600; flex:1; word-break:break-word; line-height:1.4; }
+.result-val.green { color:var(--accent); font-family:'DM Mono',monospace; }
+.result-val.teal { color:var(--accent2); font-family:'DM Mono',monospace; }
+.result-val.empty { color:var(--muted); font-style:italic; font-weight:400; font-size:12px; }
+
+.total-card {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:16px 18px; margin-bottom:16px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.total-label { font-size:12px; color:var(--muted); }
+.total-amount { font-size:24px; font-weight:800; color:var(--accent); font-family:'DM Mono',monospace; }
+
+.result-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+.action-btn {
+  padding:12px; border-radius:8px; font-size:13px; font-weight:700;
+  font-family:'Syne',sans-serif; cursor:pointer; transition:all 0.15s;
+  border:none; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.action-btn.green { background:var(--accent); color:#0d0d0b; }
+.action-btn.green:hover { background:var(--accent-dark); }
+.action-btn.outline { background:none; border:1px solid var(--border); color:var(--text); }
+.action-btn.outline:hover { border-color:var(--muted); }
+
+.reset-link {
+  display:block; text-align:center; color:var(--muted); font-size:13px;
+  cursor:pointer; padding:8px; background:none; border:none;
+  font-family:'Syne',sans-serif;
+}
+.reset-link:hover { color:var(--text); }
+
+/* ERROR */
+.error-box { display:none; background:rgba(232,92,58,0.1); border:1px solid rgba(232,92,58,0.25); border-radius:8px; padding:14px; color:var(--danger); font-size:13px; margin-bottom:12px; line-height:1.5; }
+.error-box.show { display:block; }
+
+/* ── PRICING ── */
+.pricing-grid { display:flex; flex-direction:column; gap:16px; }
+.price-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:24px 20px;
+  position:relative; overflow:hidden;
+}
+.price-card.featured { border-color:var(--accent); }
+.price-badge {
+  position:absolute; top:16px; right:16px;
+  background:var(--accent); color:#0d0d0b;
+  border-radius:6px; padding:4px 10px;
+  font-size:11px; font-weight:800; letter-spacing:0.05em;
+}
+.price-name { font-size:13px; color:var(--muted); font-weight:600; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px; }
+.price-amount { font-size:40px; font-weight:800; letter-spacing:-0.02em; margin-bottom:4px; }
+.price-amount span { font-size:16px; color:var(--muted); font-weight:400; }
+.price-desc { font-size:13px; color:var(--muted); margin-bottom:20px; line-height:1.5; }
+.price-features { list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+.price-features li { font-size:14px; display:flex; gap:8px; align-items:flex-start; line-height:1.4; }
+.price-features li::before { content:'✓'; color:var(--accent); font-weight:800; flex-shrink:0; }
+.price-features li.dim { color:var(--muted); }
+.price-features li.dim::before { content:'—'; color:var(--border); }
+.price-btn {
+  width:100%; padding:14px; border-radius:10px;
+  font-size:14px; font-weight:800; font-family:'Syne',sans-serif;
+  cursor:pointer; transition:all 0.15s; border:none;
+}
+.price-btn.main { background:var(--accent); color:#0d0d0b; }
+.price-btn.main:hover { background:var(--accent-dark); }
+.price-btn.ghost { background:none; border:1px solid var(--border); color:var(--text); }
+.price-btn.ghost:hover { border-color:var(--muted); }
+
+/* ── TRUST SECTION ── */
+.trust-cards { display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+.trust-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:18px 16px;
+  display:flex; gap:14px; align-items:flex-start;
+}
+.trust-icon { font-size:22px; flex-shrink:0; }
+.trust-title { font-weight:700; font-size:15px; margin-bottom:5px; }
+.trust-text { font-size:13px; color:var(--muted); line-height:1.6; }
+
+/* ── LEGAL ── */
+.legal-content {
+  max-width:640px; margin:0 auto;
+  padding:40px 20px 80px;
+  font-family:'Syne',sans-serif;
+  color:var(--text);
+}
+.legal-content h1 { font-size:28px; font-weight:800; margin-bottom:8px; }
+.legal-content .date { font-size:12px; color:var(--muted); margin-bottom:32px; font-family:'DM Mono',monospace; }
+.legal-content h2 { font-size:18px; font-weight:700; margin:28px 0 12px; color:var(--accent2); }
+.legal-content p { font-size:14px; color:var(--muted); line-height:1.8; margin-bottom:14px; font-weight:400; }
+.legal-content ul { padding-left:20px; margin-bottom:14px; }
+.legal-content li { font-size:14px; color:var(--muted); line-height:1.8; margin-bottom:6px; }
+.legal-content strong { color:var(--text); font-weight:700; }
+.legal-highlight {
+  background:rgba(68,212,164,0.08);
+  border:1px solid rgba(68,212,164,0.2);
+  border-radius:10px; padding:16px 18px; margin:20px 0;
+}
+.legal-highlight p { margin:0; color:var(--accent2); font-size:14px; line-height:1.7; font-weight:600; }
+
+/* ── FOOTER ── */
+footer {
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding:40px 20px 32px;
+  text-align:center;
+}
+.footer-logo { font-size:22px; font-weight:800; margin-bottom:8px; }
+.footer-logo span { color:var(--accent); }
+.footer-tagline { font-size:13px; color:var(--muted); margin-bottom:24px; }
+.footer-links { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:24px; }
+.footer-link {
+  color:var(--muted); font-size:13px; cursor:pointer;
+  padding:4px 10px; border-radius:6px; transition:color 0.15s;
+  background:none; border:none; font-family:'Syne',sans-serif;
+}
+.footer-link:hover { color:var(--text); }
+.footer-legal { font-size:12px; color:var(--muted); line-height:1.6; max-width:400px; margin:0 auto; }
+
+/* ── WHATSAPP FLOAT ── */
+.wa-btn {
+  position:fixed; bottom:24px; right:20px; z-index:90;
+  background:#25d366; color:#fff;
+  width:52px; height:52px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px; box-shadow:0 4px 16px rgba(37,211,102,0.35);
+  cursor:pointer; text-decoration:none; transition:transform 0.2s;
+  border:none;
+}
+.wa-btn:hover { transform:scale(1.08); }
+
+@media (min-width:640px) {
+  nav { padding:16px 40px; }
+  .hero { padding:100px 40px 80px; }
+  .hero-actions { flex-direction:row; justify-content:center; }
+  .btn-primary, .btn-ghost { width:auto; }
+  .section { padding:80px 40px; }
+  .demo-section { padding:0 40px 80px; }
+  .legal-content { padding:60px 40px 100px; }
+  .pricing-grid { flex-direction:row; align-items:flex-start; }
+  .price-card { flex:1; }
+  footer { padding:60px 40px 40px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Bill<span>Scan</span></div>
+  <div class="nav-links">
+    <button class="nav-link" onclick="show('home')">Home</button>
+    <button class="nav-link" onclick="show('pricing')">Pricing</button>
+    <button class="nav-cta" onclick="show('tool')">Try Free</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PAGE: HOME -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">⚡ AI-Powered · Made for India</div>
+    <h1 class="hero-title">GST invoices,<br>read in <em>seconds.</em></h1>
+    <p class="hero-sub">Upload any invoice — PDF, photo, WhatsApp screenshot. Our AI extracts every field instantly. Tally-ready CSV. No manual typing. Ever.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="show('tool')">Try It Free — No Signup</button>
+      <button class="btn-ghost" onclick="show('pricing')">See Pricing →</button>
+    </div>
+  </div>
+
+  <!-- TRUST STRIP -->
+  <div class="trust-strip">
+    <div class="trust-item"><div class="trust-dot"></div>Zero data stored</div>
+    <div class="trust-item"><div class="trust-dot"></div>Works on WhatsApp photos</div>
+    <div class="trust-item"><div class="trust-dot"></div>Tally-ready CSV export</div>
+    <div class="trust-item"><div class="trust-dot"></div>DPDP Act compliant</div>
+    <div class="trust-item"><div class="trust-dot"></div>98% accuracy</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="social-strip">
+    <p>Why CA firms switch to BillScan</p>
+    <div class="stat-row">
+      <div class="stat-item"><span class="stat-num">3 days</span><div class="stat-lbl">Work saved per month</div></div>
+      <div class="stat-item"><span class="stat-num">10 min</span><div class="stat-lbl">200 invoices processed</div></div>
+      <div class="stat-item"><span class="stat-num">₹0</span><div class="stat-lbl">Your data cost to us</div></div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Three steps.<br><em>No training needed.</em></h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Upload your invoice</div>
+          <div class="step-desc">PDF, JPG, PNG, or WhatsApp screenshot. Any format, any layout — printed, handwritten, or digital. Even blurry photos work.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">AI reads every field</div>
+          <div class="step-desc">Vendor name, GSTIN, invoice number, date, line items, CGST, SGST, IGST, grand total — extracted in under 10 seconds. Your invoice is never saved on our servers.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Download Tally-ready CSV</div>
+          <div class="step-desc">One click. Open in Excel or import directly to Tally. All fields structured exactly how your workflow needs them.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRUST CARDS -->
+  <div class="section" style="padding-top:0">
+    <div class="section-label">Built on trust</div>
+    <h2 class="section-title">Your clients' data<br>is <em>not our business.</em></h2>
+    <div class="trust-cards">
+      <div class="trust-card">
+        <div class="trust-icon">🔒</div>
+        <div>
+          <div class="trust-title">Zero data retention</div>
+          <div class="trust-text">Your invoice is processed in memory and immediately discarded. We do not store, log, or analyse any invoice content. Period.</div>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🇮🇳</div>
+        <div>
+          <div class="trust-title">DPDP Act 2023 compliant</div>
+          <div class="trust-text">We follow India's Digital Personal Data Protection Act. You remain the data controller. We are only a processor — and we process nothing beyond your session.</div>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">💳</div>
+        <div>
+          <div class="trust-title">Payments via Razorpay</div>
+          <div class="trust-text">Your card or UPI details never touch our servers. All payments are processed by Razorpay — India's most trusted payment gateway. We see only a success/failure signal.</div>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">⚖️</div>
+        <div>
+          <div class="trust-title">Not legal or tax advice</div>
+          <div class="trust-text">BillScan extracts data from invoices. It does not validate GST compliance, file returns, or provide any tax or legal advice. Always verify extracted data before filing.</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="show('tool')" style="width:100%;max-width:none">Try BillScan Free →</button>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Bill<span>Scan</span> AI</div>
+    <div class="footer-tagline">GST Invoice Extractor · Made in India</div>
+    <div class="footer-links">
+      <button class="footer-link" onclick="show('tool')">Try Free</button>
+      <button class="footer-link" onclick="show('pricing')">Pricing</button>
+      <button class="footer-link" onclick="show('privacy')">Privacy Policy</button>
+      <button class="footer-link" onclick="show('terms')">Terms of Service</button>
+    </div>
+    <div class="footer-legal">BillScan AI does not store invoice data. All processing is in-memory and session-only. Payments handled by Razorpay. Not affiliated with GSTN or any government body.</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PAGE: TOOL (the actual extractor) -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page" id="page-tool">
+  <div class="demo-section" style="padding-top:24px">
+
+    <div style="margin-bottom:20px">
+      <div class="section-label">Live Demo</div>
+      <h2 style="font-size:26px;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px">Extract your invoice</h2>
+      <p style="font-size:13px;color:var(--muted)">Your invoice is never stored. Processed in memory, discarded immediately.</p>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-header">
+        <div class="demo-dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+        <div class="demo-title">BillScan AI Extractor</div>
+      </div>
+      <div class="demo-body">
+
+        <!-- API KEY -->
+        <div class="key-row">
+          <input type="password" class="key-input" id="apiKey" placeholder="Gemini API key (get free at aistudio.google.com)">
+          <button class="key-save-btn" onclick="saveKey()">Save</button>
+        </div>
+        <div class="key-notice">Key stays in your browser only — never sent to our servers. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);text-decoration:none">Get free key →</a></div>
+
+        <!-- UPLOAD -->
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileIn').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDrop(event)">
+          <div class="upload-icon">📄</div>
+          <div class="upload-title">Drop invoice here</div>
+          <div class="upload-sub">PDF · JPG · PNG · WhatsApp photo</div>
+          <div class="upload-btn-sm">Choose File</div>
+        </div>
+        <input type="file" id="fileIn" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none" onchange="onFile(event)">
+
+        <div class="file-pill" id="filePill">
+          <span>📄</span>
+          <span class="file-pill-name" id="pillName">—</span>
+          <button class="file-pill-rm" onclick="clearFile()">✕</button>
+        </div>
+
+        <div class="error-box" id="errBox"></div>
+
+        <button class="extract-btn-main" id="extractBtn" onclick="extract()" disabled>🔍 Extract Invoice Data</button>
+
+        <div class="security-note">
+          <div><strong>Privacy guaranteed</strong>Your invoice is processed in memory and deleted immediately. We never store, log, or share any invoice content. No account required.</div>
+        </div>
+
+        <!-- PROCESSING -->
+        <div class="proc-box" id="procBox">
+          <div class="spinner"></div>
+          <div class="proc-text">Reading your invoice...</div>
+          <div class="proc-sub">AI is extracting every GST field</div>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="results-box" id="resultsBox">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-top:16px;border-top:1px solid var(--border)">
+            <div style="font-weight:800;font-size:16px">Extracted Data</div>
+            <div style="background:rgba(68,212,164,0.1);color:var(--accent2);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700">✓ Complete</div>
+          </div>
+
+          <!-- Grand Total -->
+          <div class="total-card" id="totalCard" style="display:none">
+            <div><div class="total-label">Grand Total</div><div style="font-size:12px;color:var(--muted)" id="totalWords"></div></div>
+            <div class="total-amount" id="totalAmount">—</div>
+          </div>
+
+          <!-- Vendor -->
+          <div class="result-section">
+            <div class="result-section-title">🏢 Vendor</div>
+            <div class="result-grid" id="vendorGrid"></div>
+          </div>
+
+          <!-- Invoice -->
+          <div class="result-section">
+            <div class="result-section-title">🧾 Invoice Details</div>
+            <div class="result-grid" id="invoiceGrid"></div>
+          </div>
+
+          <!-- Tax -->
+          <div class="result-section">
+            <div class="result-section-title">💰 Tax Breakdown</div>
+            <div class="result-grid" id="taxGrid"></div>
+          </div>
+
+          <div class="result-actions">
+            <button class="action-btn green" onclick="dlCSV()">⬇ Download CSV</button>
+            <button class="action-btn outline" onclick="cpJSON()">📋 Copy JSON</button>
+          </div>
+          <button class="reset-link" onclick="resetTool()">↩ Extract another invoice</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px">
+      <button class="footer-link" onclick="show('privacy')" style="font-size:12px">Privacy Policy</button>
+      <button class="footer-link" onclick="show('terms')" style="font-size:12px">Terms of Service</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PAGE: PRICING -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page" id="page-pricing">
+  <div class="section">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Simple, honest<br><em>pricing.</em></h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:36px;line-height:1.6">No hidden fees. No per-invoice charges. Pay monthly, cancel anytime.</p>
+
+    <div class="pricing-grid">
+      <!-- Starter -->
+      <div class="price-card">
+        <div class="price-name">Starter</div>
+        <div class="price-amount">₹4,999 <span>/ month</span></div>
+        <div class="price-desc">For small CA practices with 1–2 staff handling invoices.</div>
+        <ul class="price-features">
+          <li>Up to 500 invoices/month</li>
+          <li>PDF, JPG, PNG, WEBP support</li>
+          <li>Tally-ready CSV export</li>
+          <li>Email support</li>
+          <li class="dim">API access</li>
+          <li class="dim">Priority support</li>
+        </ul>
+        <button class="price-btn ghost" onclick="openWA('Starter')">Get Started →</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="price-card featured">
+        <div class="price-badge">POPULAR</div>
+        <div class="price-name">Professional</div>
+        <div class="price-amount">₹9,999 <span>/ month</span></div>
+        <div class="price-desc">For established CA firms handling multiple clients.</div>
+        <ul class="price-features">
+          <li>Up to 2,000 invoices/month</li>
+          <li>All file types including bulk upload</li>
+          <li>Tally + JSON export</li>
+          <li>WhatsApp support</li>
+          <li>API access (integrate your workflow)</li>
+          <li>Priority response within 4 hours</li>
+        </ul>
+        <button class="price-btn main" onclick="openWA('Professional')">Get Started →</button>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="price-card">
+        <div class="price-name">Enterprise</div>
+        <div class="price-amount">Custom</div>
+        <div class="price-desc">For large firms, GST practitioners, or accounting software companies.</div>
+        <ul class="price-features">
+          <li>Unlimited invoices</li>
+          <li>Dedicated API endpoint</li>
+          <li>SLA guarantee</li>
+          <li>Custom Tally / ERP integration</li>
+          <li>Onboarding support</li>
+          <li>Data processing agreement</li>
+        </ul>
+        <button class="price-btn ghost" onclick="openWA('Enterprise')">Contact Us →</button>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 18px">
+      <div style="font-weight:700;margin-bottom:8px">🔒 No risk, full trust</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">
+        All plans include our zero-data-retention guarantee. Payments via Razorpay — your card never touches our servers. Cancel any time. No contract lock-in.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Bill<span>Scan</span> AI</div>
+    <div class="footer-links">
+      <button class="footer-link" onclick="show('home')">Home</button>
+      <button class="footer-link" onclick="show('tool')">Try Free</button>
+      <button class="footer-link" onclick="show('privacy')">Privacy Policy</button>
+      <button class="footer-link" onclick="show('terms')">Terms of Service</button>
+    </div>
+    <div class="footer-legal">BillScan AI · GST Invoice Extractor · Made in India</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PAGE: PRIVACY POLICY -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page" id="page-privacy">
+  <div class="legal-content">
+    <h1>Privacy Policy</h1>
+    <div class="date">Last updated: May 2025 · Effective immediately</div>
+
+    <div class="legal-highlight">
+      <p>🔒 The short version: We do not store your invoices. We do not store extracted data. Your information is processed in memory and discarded the moment you get your results. We have nothing to sell, nothing to leak.</p>
+    </div>
+
+    <h2>1. Who we are</h2>
+    <p>BillScan AI is an AI-powered GST invoice data extraction service. We are a technology tool, not an accounting firm, tax advisor, or financial institution. We are registered in India and operate under Indian law.</p>
+
+    <h2>2. What data we collect</h2>
+    <p>When you use BillScan AI:</p>
+    <ul>
+      <li><strong>Invoice files</strong> — uploaded by you, processed in memory, never written to disk or database, discarded immediately after extraction.</li>
+      <li><strong>Extracted data</strong> — returned to your browser only. Not stored on our servers.</li>
+      <li><strong>API keys</strong> — entered by you, stored only in your own browser's local storage. Never transmitted to our servers.</li>
+      <li><strong>Basic server logs</strong> — HTTP method, path, response code, response time. No request body, no file content, no extracted data is ever logged.</li>
+    </ul>
+    <p>We do <strong>not</strong> collect: names, email addresses, phone numbers, payment card details, or any personally identifiable information unless you voluntarily contact us.</p>
+
+    <h2>3. How we use your data</h2>
+    <p>We use invoice files exclusively to perform the extraction you request. No other use. No training of AI models on your data. No analysis. No profiling.</p>
+
+    <h2>4. Data storage and retention</h2>
+    <p><strong>Invoice files: 0 seconds retention.</strong> Processed in RAM, never written to storage, buffer wiped after response is sent.</p>
+    <p><strong>Extracted results: 0 seconds retention.</strong> Returned to your browser and not stored anywhere on our infrastructure.</p>
+    <p><strong>Server logs: 30 days.</strong> Contain no invoice content — only technical metadata (HTTP status codes, response times).</p>
+
+    <h2>5. Payments</h2>
+    <p>All payments are processed by <strong>Razorpay</strong> (Razorpay Software Private Limited). Your card number, UPI ID, bank details, and OTPs are entered directly on Razorpay's platform. BillScan AI receives only a payment success or failure notification and a transaction reference ID. We never see, store, or handle your payment credentials.</p>
+
+    <h2>6. Third-party AI providers</h2>
+    <p>Invoice processing uses AI models from third-party providers (Google Gemini, Anthropic Claude, or others). Your invoice is sent to these providers solely to perform extraction. These providers have their own privacy policies. We use their APIs under terms that restrict training on customer data.</p>
+
+    <h2>7. Your rights under DPDP Act 2023</h2>
+    <p>Under India's Digital Personal Data Protection Act 2023, you have the right to access, correct, and erase personal data we hold about you. Since we do not store invoice data, there is typically nothing to access or erase. For server log inquiries, contact us at the address below.</p>
+
+    <h2>8. Children</h2>
+    <p>BillScan AI is a professional B2B tool intended for use by CA firms and business professionals. It is not directed at individuals under 18 years of age.</p>
+
+    <h2>9. Contact</h2>
+    <p>Privacy questions: contact us via WhatsApp or email listed on this website. We respond within 2 business days.</p>
+
+    <div style="margin-top:32px"><button class="btn-ghost" onclick="show('home')" style="width:auto;padding:12px 24px">← Back to Home</button></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PAGE: TERMS OF SERVICE -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page" id="page-terms">
+  <div class="legal-content">
+    <h1>Terms of Service</h1>
+    <div class="date">Last updated: May 2025 · Effective immediately</div>
+
+    <div class="legal-highlight">
+      <p>⚖️ The short version: Use BillScan AI for legitimate invoice extraction. We extract data — we do not store it, validate GST compliance, or provide legal/tax advice. Always verify extracted data before filing returns.</p>
+    </div>
+
+    <h2>1. Acceptance</h2>
+    <p>By using BillScan AI ("Service", "we", "our"), you agree to these Terms. If you are using the Service on behalf of a CA firm or business entity, you represent that you have authority to bind that entity.</p>
+
+    <h2>2. What BillScan AI does</h2>
+    <p>BillScan AI reads invoice images and PDFs and extracts structured data fields using AI models. It is a <strong>data extraction tool only</strong>. It does not:</p>
+    <ul>
+      <li>Validate GST compliance or correctness of invoices</li>
+      <li>File GST returns or interact with GSTN</li>
+      <li>Provide legal, tax, accounting, or financial advice</li>
+      <li>Guarantee 100% accuracy of extracted data</li>
+    </ul>
+    <p><strong>You are responsible for verifying all extracted data before use in any legal, financial, or tax context.</strong></p>
+
+    <h2>3. Permitted use</h2>
+    <p>You may use BillScan AI to extract data from invoices that you have lawful authority to process — i.e. invoices belonging to you, your clients (with their consent), or your employer. You may not use BillScan AI to process invoices you do not have permission to handle.</p>
+
+    <h2>4. Prohibited use</h2>
+    <ul>
+      <li>Processing invoices without lawful authority</li>
+      <li>Attempting to reverse-engineer or scrape the Service</li>
+      <li>Using the Service to commit fraud or any illegal act</li>
+      <li>Uploading malware, ransomware, or malicious files</li>
+      <li>Sharing your API credentials with unauthorised parties</li>
+    </ul>
+
+    <h2>5. Data and privacy</h2>
+    <p>Our Privacy Policy governs data handling. In summary: we do not store your invoices. You remain the data controller for all invoices you upload. By uploading an invoice, you confirm you have the right to process that invoice.</p>
+
+    <h2>6. Payments and refunds</h2>
+    <p>Subscription fees are billed monthly. We offer a 7-day refund window for first-time subscribers if the Service did not perform as described. Refund requests after 7 days are at our discretion. Payments processed by Razorpay are subject to Razorpay's terms.</p>
+
+    <h2>7. Limitation of liability</h2>
+    <p>BillScan AI is provided "as is". We are not liable for:</p>
+    <ul>
+      <li>Errors in extracted data and consequences of relying on such data</li>
+      <li>Any indirect, incidental, or consequential damages</li>
+      <li>Loss of data, revenue, or business arising from use of the Service</li>
+      <li>Service downtime or unavailability</li>
+    </ul>
+    <p>Our total liability to you in any month shall not exceed the subscription fee paid by you in that month.</p>
+
+    <h2>8. Intellectual property</h2>
+    <p>BillScan AI, its design, code, and branding are owned by us. Your invoices and the extracted data belong to you. We claim no ownership over your data.</p>
+
+    <h2>9. Governing law</h2>
+    <p>These Terms are governed by the laws of India. Any disputes shall be subject to the jurisdiction of courts in Mumbai, Maharashtra.</p>
+
+    <h2>10. Changes to Terms</h2>
+    <p>We may update these Terms. Continued use after changes constitutes acceptance. Material changes will be communicated via the website.</p>
+
+    <div style="margin-top:32px"><button class="btn-ghost" onclick="show('home')" style="width:auto;padding:12px 24px">← Back to Home</button></div>
+  </div>
+</div>
+
+<!-- WHATSAPP BUTTON -->
+<a class="wa-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%20want%20to%20know%20more%20about%20BillScan%20AI" target="_blank" title="Chat on WhatsApp">💬</a>
+
+<script>
+// ── PAGE ROUTING ──
+function show(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── API KEY ──
+let savedKey = '';
+window.addEventListener('load', () => {
+  // Don't retrieve from localStorage for security — user must re-enter each session
+  // This ensures no key is ever persisted beyond the tab session
+});
+function saveKey() {
+  const val = document.getElementById('apiKey').value.trim();
+  if (!val) return;
+  savedKey = val;
+  document.getElementById('apiKey').value = '•'.repeat(Math.min(val.length, 20));
+  document.getElementById('apiKey').placeholder = 'API key saved for this session';
+}
+
+// ── FILE HANDLING ──
+let currentFile = null;
+let extractedData = null;
+
+function onFile(e) { setFile(e.target.files[0]); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  setFile(e.dataTransfer.files[0]);
+}
+function setFile(f) {
+  if (!f) return;
+  currentFile = f;
+  document.getElementById('pillName').textContent = f.name;
+  document.getElementById('filePill').classList.add('show');
+  document.getElementById('extractBtn').disabled = false;
+}
+function clearFile() {
+  currentFile = null;
+  document.getElementById('fileIn').value = '';
+  document.getElementById('filePill').classList.remove('show');
+  document.getElementById('extractBtn').disabled = true;
+}
+
+// ── EXTRACTION ──
+async function extract() {
+  const key = savedKey || document.getElementById('apiKey').value.trim();
+  if (!key) { showErr('Please enter your Gemini API key first.'); return; }
+  if (!currentFile) { showErr('Please select an invoice file.'); return; }
+
+  hideErr();
+  document.getElementById('procBox').classList.add('show');
+  document.getElementById('extractBtn').style.display = 'none';
+  document.getElementById('resultsBox').classList.remove('show');
+
+  try {
+    const b64 = await toBase64(currentFile);
+    const mime = currentFile.type || 'image/jpeg';
+
+    const prompt = `You are a GST invoice data extractor for India. Extract all fields and return ONLY valid JSON, no markdown.
+Return: {"vendor":{"name":null,"gstin":null,"address":null,"phone":null},"buyer":{"name":null,"gstin":null,"address":null},"invoice":{"number":null,"date":null,"due_date":null,"place_of_supply":null},"line_items":[{"description":null,"hsn_sac":null,"quantity":null,"rate":null,"amount":null}],"taxes":{"subtotal":null,"cgst":null,"sgst":null,"igst":null,"total_tax":null,"grand_total":null,"total_in_words":null},"confidence":90}`;
+
+    const body = {
+      contents:[{ parts:[
+        { inline_data:{ mime_type: mime, data: b64 } },
+        { text: prompt }
+      ]}],
+      generationConfig:{ temperature:0.1, maxOutputTokens:2048 }
+    };
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }
+    );
+
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.error?.message || 'Gemini API error ' + res.status);
+    }
+
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const s = clean.indexOf('{'), e2 = clean.lastIndexOf('}');
+    if (s < 0) throw new Error('No data extracted — try a clearer image');
+    extractedData = JSON.parse(clean.substring(s, e2+1));
+
+    document.getElementById('procBox').classList.remove('show');
+    document.getElementById('extractBtn').style.display = 'block';
+    renderResults(extractedData);
+
+  } catch(err) {
+    document.getElementById('procBox').classList.remove('show');
+    document.getElementById('extractBtn').style.display = 'block';
+    showErr('Extraction failed: ' + err.message);
+  }
+}
+
+function toBase64(file) {
+  return new Promise((res,rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function renderResults(d) {
+  // Grand Total
+  if (d.taxes?.grand_total) {
+    document.getElementById('totalAmount').textContent = '₹' + fmt(d.taxes.grand_total);
+    document.getElementById('totalWords').textContent = d.taxes.total_in_words || '';
+    document.getElementById('totalCard').style.display = 'flex';
+  }
+
+  // Vendor
+  document.getElementById('vendorGrid').innerHTML = [
+    ['Name', d.vendor?.name],
+    ['GSTIN', d.vendor?.gstin],
+    ['Address', d.vendor?.address],
+    ['Phone', d.vendor?.phone],
+  ].map(([k,v]) => row(k,v, k==='GSTIN'?'teal':'')).join('');
+
+  // Invoice
+  document.getElementById('invoiceGrid').innerHTML = [
+    ['Bill To', d.buyer?.name],
+    ['Buyer GSTIN', d.buyer?.gstin],
+    ['Invoice No.', d.invoice?.number],
+    ['Date', d.invoice?.date],
+    ['Due Date', d.invoice?.due_date],
+    ['Place of Supply', d.invoice?.place_of_supply],
+  ].map(([k,v]) => row(k,v)).join('');
+
+  // Tax
+  document.getElementById('taxGrid').innerHTML = [
+    ['Subtotal', d.taxes?.subtotal ? '₹'+fmt(d.taxes.subtotal) : null],
+    ['CGST', d.taxes?.cgst ? '₹'+fmt(d.taxes.cgst) : null],
+    ['SGST', d.taxes?.sgst ? '₹'+fmt(d.taxes.sgst) : null],
+    ['IGST', d.taxes?.igst ? '₹'+fmt(d.taxes.igst) : null],
+    ['Total Tax', d.taxes?.total_tax ? '₹'+fmt(d.taxes.total_tax) : null],
+    ['Grand Total', d.taxes?.grand_total ? '₹'+fmt(d.taxes.grand_total) : null],
+  ].filter(([,v]) => v).map(([k,v]) => row(k,v,'green')).join('');
+
+  document.getElementById('resultsBox').classList.add('show');
+  document.getElementById('resultsBox').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function row(key, val, cls='') {
+  const v = val
+    ? `<div class="result-val ${cls}">${val}</div>`
+    : `<div class="result-val empty">Not found</div>`;
+  return `<div class="result-row"><div class="result-key">${key}</div>${v}</div>`;
+}
+
+function fmt(n) {
+  return Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function resetTool() {
+  extractedData = null;
+  clearFile();
+  document.getElementById('resultsBox').classList.remove('show');
+  document.getElementById('totalCard').style.display = 'none';
+  window.scrollTo(0,0);
+}
+
+function showErr(msg) {
+  const b = document.getElementById('errBox');
+  b.textContent = '⚠ ' + msg;
+  b.classList.add('show');
+}
+function hideErr() { document.getElementById('errBox').classList.remove('show'); }
+
+// ── EXPORT ──
+function dlCSV() {
+  if (!extractedData) return;
+  const d = extractedData;
+  const rows = [
+    ['BillScan AI Export'],['Extracted',new Date().toLocaleDateString('en-IN')],[],
+    ['VENDOR'],['Name',d.vendor?.name||''],['GSTIN',d.vendor?.gstin||''],['Address',d.vendor?.address||''],[],
+    ['INVOICE'],['Invoice No',d.invoice?.number||''],['Date',d.invoice?.date||''],['Place of Supply',d.invoice?.place_of_supply||''],[],
+    ['BUYER'],['Name',d.buyer?.name||''],['GSTIN',d.buyer?.gstin||''],[],
+    ['TAX SUMMARY'],['Subtotal',d.taxes?.subtotal||''],['CGST',d.taxes?.cgst||''],
+    ['SGST',d.taxes?.sgst||''],['IGST',d.taxes?.igst||''],['Grand Total',d.taxes?.grand_total||''],
+    ['Amount in Words',d.taxes?.total_in_words||'']
+  ];
+  const csv = rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`invoice_${d.invoice?.number||'extracted'}.csv`;
+  a.click();
+}
+function cpJSON() {
+  if (!extractedData) return;
+  navigator.clipboard.writeText(JSON.stringify(extractedData,null,2));
+  const btn = document.querySelectorAll('.action-btn.outline')[0];
+  btn.textContent = '✓ Copied!';
+  setTimeout(()=>btn.textContent='📋 Copy JSON',2000);
+}
+
+// ── WHATSAPP ENQUIRY ──
+function openWA(plan) {
+  const msg = encodeURIComponent(`Hi, I'm interested in the BillScan AI ${plan} plan. Can you share details?`);
+  window.open(`https://wa.me/91XXXXXXXXXX?text=${msg}`, '_blank');
+}
+</script>
+</body>
+</html>
