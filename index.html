@@ -899,6 +899,7 @@ function clearFile() {
 }
 
 // ── EXTRACTION ──
+const BACKEND = "https://billscan-backend-production.up.railway.app";
 async function extract() {
   const key = savedKey || document.getElementById('apiKey').value.trim();
   if (!key) { showErr('Please enter your Gemini API key first.'); return; }
