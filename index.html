@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43FDHSD3NH"></script>
 <script>
@@ -231,13 +230,6 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   .price-card { flex:1; }
 }
 </style>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-G3NFHXVTP4"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag("js", new Date());
-  gtag("config", "G-G3NFHXVTP4");
-</script>
 </head>
 <body>
 
@@ -247,7 +239,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <button class="nav-btn ghost" onclick="window._show && window._show('home')">Home</button>
     <button class="nav-btn ghost" onclick="window._show && window._show('pricing')">Pricing</button>
     <button class="nav-btn primary" onclick="window._show && window._show('tool')">Try Free</button>
-<button class="nav-btn outline" id="navAuthBtn">Sign In</button>
+<button class="nav-btn outline" id="navAuthBtn" onclick="fakeAuth()">Sign In</button>
   </div>
 </nav>
 
@@ -436,52 +428,65 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   </footer>
 </div>
 
-<a class="wa-float" href="/api/support" target="_blank">💬</a>
+<a class="wa-float" href="https://billscan-backend-production.up.railway.app/api/support" target="_blank">💬</a>
 
 <script>
 const BACKEND = 'https://billscan-backend-production.up.railway.app';
+const AUTH_BASE = BACKEND + '/api/auth';
 
-// ── SUPABASE AUTH ──
-const _supabase = window.supabase.createClient(
-  'https://wtvqvczsvhijnppzjucr.supabase.co',
-  'sb_publishable_3jDpr7mzc0WvDwpSjSvBnA_qJgNo2F-'
-);
+// ── SESSION MANAGEMENT ──
+function getSessionToken() { return localStorage.getItem('billscan_session'); }
+function saveSession(token) { localStorage.setItem('billscan_session', token); localStorage.setItem('billscan_authed', 'true'); }
+function clearSession() { localStorage.removeItem('billscan_session'); localStorage.removeItem('billscan_authed'); }
 
-// Check session on load
-_supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session) {
-    isAuthed = true;
-    localStorage.setItem('billscan_authed', 'true');
-    document.getElementById('attemptsBar').style.display = 'none';
-    updateNavUser(session.user);
-  }
-});
-
-// Listen for auth changes
-_supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    isAuthed = true;
-    localStorage.setItem('billscan_authed', 'true');
-    document.getElementById('authWall').classList.remove('show');
-    document.getElementById('attemptsBar').style.display = 'none';
-    updateNavUser(session.user);
-    if(typeof gtag !== 'undefined') gtag('event', 'sign_in', {method: 'google'});
-  }
-  if (event === 'SIGNED_OUT') {
-    isAuthed = false;
-    localStorage.removeItem('billscan_authed');
-    updateNavUser(null);
-  }
-});
+async function verifySession() {
+  const token = getSessionToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(AUTH_BASE + '/verify', { headers: { 'x-session-token': token } });
+    const data = await res.json();
+    return data.valid ? data.user : null;
+  } catch(e) { return null; }
+}
 
 function updateNavUser(user) {
   const btn = document.getElementById('navAuthBtn');
+  if (!btn) return;
   if (user) {
-    btn.textContent = '👤 ' + (user.email?.split('@')[0] || 'Account');
-    btn.onclick = () => _supabase.auth.signOut();
+    btn.textContent = '👤 ' + (user.name?.split(' ')[0] || user.email?.split('@')[0] || 'Account');
+    btn.onclick = () => signOut();
   } else {
     btn.textContent = 'Sign In';
     btn.onclick = () => show('tool');
+  }
+}
+
+function signOut() {
+  clearSession();
+  isAuthed = false;
+  updateNavUser(null);
+}
+
+// ── HANDLE OAUTH REDIRECT ──
+function handleAuthRedirect() {
+  const params = new URLSearchParams(window.location.search);
+  const auth = params.get('auth');
+  const token = params.get('token');
+  if (auth === 'success' && token) {
+    saveSession(token);
+    isAuthed = true;
+    window.history.replaceState({}, '', window.location.pathname);
+    document.getElementById('authWall').classList.remove('show');
+    document.getElementById('attemptsBar').style.display = 'none';
+    if(typeof gtag !== 'undefined') gtag('event', 'sign_in', {method: 'google'});
+    verifySession().then(user => updateNavUser(user));
+  } else if (auth === 'error') {
+    window.history.replaceState({}, '', window.location.pathname);
+    const reason = params.get('reason') || 'unknown error';
+    showErr('Sign in failed: ' + reason + '. Please try again.');
+    show('tool');
+  } else if (auth === 'signout') {
+    window.history.replaceState({}, '', window.location.pathname);
   }
 }
 // ── FREE ATTEMPTS — persisted in localStorage ──
@@ -503,20 +508,30 @@ function getRemainingAttempts() {
 }
 let attempts = getRemainingAttempts();
 
-// Check auth state on load
+// ── ON LOAD ──
 window.addEventListener('load', () => {
   window._show = show;
-  const navBtn = document.getElementById('navAuthBtn');
-  if(navBtn) navBtn.onclick = () => show('tool');
-  if(localStorage.getItem('billscan_authed') === 'true') {
-    isAuthed = true;
-    document.getElementById('attemptsBar').style.display = 'none';
-  }
-  updateUI();
-  // Show auth wall immediately if attempts exhausted
-  if(getRemainingAttempts() <= 0 && !isAuthed) {
-    document.getElementById('authWall').classList.add('show');
-  }
+  // navAuthBtn default onclick is fakeAuth() — only override when logged in
+
+  // Handle OAuth redirect first
+  handleAuthRedirect();
+
+  // Verify existing session
+  verifySession().then(user => {
+    if (user) {
+      isAuthed = true;
+      localStorage.setItem('billscan_authed', 'true');
+      document.getElementById('attemptsBar').style.display = 'none';
+      updateNavUser(user);
+    } else if (localStorage.getItem('billscan_authed') === 'true') {
+      // Session expired — clear it
+      clearSession();
+    }
+    updateUI();
+    if(getRemainingAttempts() <= 0 && !isAuthed) {
+      document.getElementById('authWall').classList.add('show');
+    }
+  });
 });
 
 function show(p) {
@@ -532,35 +547,12 @@ function updateUI() {
   else{lbl.textContent='No free extractions left — sign in to continue';d1.classList.add('used');d2.classList.add('used');}
 }
 
-async function fakeAuth() {
-  try {
-    const { error } = await _supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'https://vivian-fernandes.github.io/billscan-website'
-      }
-    });
-    if (error) throw error;
-  } catch(err) {
-    alert('Sign in failed: ' + err.message);
-  }
+function fakeAuth() {
+  window.location.href = AUTH_BASE + '/google';
 }
 
-async function signInWithEmail() {
-  const email = document.querySelector('.email-input[type="email"]').value;
-  const password = document.querySelector('.email-input[type="password"]').value;
-  if (!email || !password) { alert('Enter email and password'); return; }
-  try {
-    const { error } = await _supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      // Try signup if login fails
-      const { error: signupError } = await _supabase.auth.signUp({ email, password });
-      if (signupError) throw signupError;
-      alert('Check your email to confirm your account!');
-    }
-  } catch(err) {
-    alert('Error: ' + err.message);
-  }
+function signInWithEmail() {
+  alert('Email sign in coming soon! Please use Google Sign In for now.');
 }
 
 function onFile(e){setFile(e.target.files[0]);}
