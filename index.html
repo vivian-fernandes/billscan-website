@@ -244,10 +244,10 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 <nav>
   <div class="logo">Bill<span>Scan</span></div>
   <div class="nav-right">
-    <button class="nav-btn ghost" onclick="show('home')">Home</button>
-    <button class="nav-btn ghost" onclick="show('pricing')">Pricing</button>
-    <button class="nav-btn primary" onclick="show('tool')">Try Free</button>
-<button class="nav-btn outline" id="navAuthBtn" onclick="show('tool')">Sign In</button>
+    <button class="nav-btn ghost" onclick="window._show && window._show('home')">Home</button>
+    <button class="nav-btn ghost" onclick="window._show && window._show('pricing')">Pricing</button>
+    <button class="nav-btn primary" onclick="window._show && window._show('tool')">Try Free</button>
+<button class="nav-btn outline" id="navAuthBtn">Sign In</button>
   </div>
 </nav>
 
@@ -258,8 +258,8 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <h1 class="hero-title">GST invoices,<br>read in <span class="green">seconds.</span></h1>
     <p class="hero-sub">Upload any invoice — PDF, photo, WhatsApp screenshot. AI extracts every field instantly. Tally-ready CSV. No manual typing. Ever.</p>
     <div class="hero-cta">
-      <button class="btn-lg green" onclick="show('tool')">Try Free — No Signup</button>
-      <button class="btn-lg neutral" onclick="show('pricing')">See Pricing →</button>
+      <button class="btn-lg green" onclick="window._show && window._show('tool')">Try Free — No Signup</button>
+      <button class="btn-lg neutral" onclick="window._show && window._show('pricing')">See Pricing →</button>
     </div>
     <div class="hero-stats">
       <div class="hero-stat"><span class="hero-stat-num">3 days</span><div class="hero-stat-lbl">Saved monthly</div></div>
@@ -299,8 +299,8 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   <footer>
     <div class="footer-logo">Bill<span>Scan</span> AI</div>
     <div class="footer-links">
-      <button class="footer-link" onclick="show('tool')">Try Free</button>
-      <button class="footer-link" onclick="show('pricing')">Pricing</button>
+      <button class="footer-link" onclick="window._show && window._show('tool')">Try Free</button>
+      <button class="footer-link" onclick="window._show && window._show('pricing')">Pricing</button>
       <button class="footer-link">Privacy Policy</button>
       <button class="footer-link">Terms</button>
     </div>
@@ -337,8 +337,8 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
       <div class="paywall-icon">🚀</div>
       <div class="paywall-title">Upgrade for unlimited access</div>
       <div class="paywall-sub">Plans start at ₹4,999/month — less than one junior staff salary. Process unlimited invoices.</div>
-      <button class="paywall-btn" onclick="show('pricing')">See Plans →</button>
-      <button class="paywall-skip" onclick="show('pricing')">View all pricing</button>
+      <button class="paywall-btn" onclick="window._show && window._show('pricing')">See Plans →</button>
+      <button class="paywall-skip" onclick="window._show && window._show('pricing')">View all pricing</button>
     </div>
 
     <div id="extractorUI">
@@ -427,8 +427,8 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   <footer>
     <div class="footer-logo">Bill<span>Scan</span> AI</div>
     <div class="footer-links">
-      <button class="footer-link" onclick="show('home')">Home</button>
-      <button class="footer-link" onclick="show('tool')">Try Free</button>
+      <button class="footer-link" onclick="window._show && window._show('home')">Home</button>
+      <button class="footer-link" onclick="window._show && window._show('tool')">Try Free</button>
       <button class="footer-link">Privacy Policy</button>
       <button class="footer-link">Terms</button>
     </div>
@@ -442,13 +442,13 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 const BACKEND = 'https://billscan-backend-production.up.railway.app';
 
 // ── SUPABASE AUTH ──
-const supabase = window.supabase.createClient(
+const _supabase = window.supabase.createClient(
   'https://wtvqvczsvhijnppzjucr.supabase.co',
   'sb_publishable_3jDpr7mzc0WvDwpSjSvBnA_qJgNo2F-'
 );
 
 // Check session on load
-supabase.auth.getSession().then(({ data: { session } }) => {
+_supabase.auth.getSession().then(({ data: { session } }) => {
   if (session) {
     isAuthed = true;
     localStorage.setItem('billscan_authed', 'true');
@@ -458,7 +458,7 @@ supabase.auth.getSession().then(({ data: { session } }) => {
 });
 
 // Listen for auth changes
-supabase.auth.onAuthStateChange((event, session) => {
+_supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
     isAuthed = true;
     localStorage.setItem('billscan_authed', 'true');
@@ -478,7 +478,7 @@ function updateNavUser(user) {
   const btn = document.getElementById('navAuthBtn');
   if (user) {
     btn.textContent = '👤 ' + (user.email?.split('@')[0] || 'Account');
-    btn.onclick = () => supabase.auth.signOut();
+    btn.onclick = () => _supabase.auth.signOut();
   } else {
     btn.textContent = 'Sign In';
     btn.onclick = () => show('tool');
@@ -505,6 +505,9 @@ let attempts = getRemainingAttempts();
 
 // Check auth state on load
 window.addEventListener('load', () => {
+  window._show = show;
+  const navBtn = document.getElementById('navAuthBtn');
+  if(navBtn) navBtn.onclick = () => show('tool');
   if(localStorage.getItem('billscan_authed') === 'true') {
     isAuthed = true;
     document.getElementById('attemptsBar').style.display = 'none';
@@ -516,7 +519,8 @@ window.addEventListener('load', () => {
   }
 });
 
-function show(p) { document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); window.scrollTo(0,0); if(typeof gtag !== 'undefined') gtag('event', 'page_view', {page_title: p, page_location: window.location.href + '#' + p}); }
+function show(p) {
+  window._show = show; document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); window.scrollTo(0,0); if(typeof gtag !== 'undefined') gtag('event', 'page_view', {page_title: p, page_location: window.location.href + '#' + p}); }
 
 function updateUI() {
   const remaining = getRemainingAttempts();
