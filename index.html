@@ -330,7 +330,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
       <div class="divider"><div class="divider-line"></div><div class="divider-text">or sign in with email</div><div class="divider-line"></div></div>
       <input type="email" class="email-input" placeholder="Email address">
       <input type="password" class="email-input" placeholder="Password">
-      <button class="email-btn" onclick="fakeAuth()">Sign In</button>
+      <button class="email-btn" onclick="signInWithEmail()">Sign In / Sign Up</button>
     </div>
 
     <div class="paywall" id="paywall">
@@ -532,7 +532,36 @@ function updateUI() {
   else{lbl.textContent='No free extractions left — sign in to continue';d1.classList.add('used');d2.classList.add('used');}
 }
 
-function fakeAuth() { isAuthed=true; document.getElementById('authWall').classList.remove('show'); attempts=999; document.getElementById('attemptsBar').style.display='none'; }
+async function fakeAuth() {
+  try {
+    const { error } = await _supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://vivian-fernandes.github.io/billscan-website'
+      }
+    });
+    if (error) throw error;
+  } catch(err) {
+    alert('Sign in failed: ' + err.message);
+  }
+}
+
+async function signInWithEmail() {
+  const email = document.querySelector('.email-input[type="email"]').value;
+  const password = document.querySelector('.email-input[type="password"]').value;
+  if (!email || !password) { alert('Enter email and password'); return; }
+  try {
+    const { error } = await _supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      // Try signup if login fails
+      const { error: signupError } = await _supabase.auth.signUp({ email, password });
+      if (signupError) throw signupError;
+      alert('Check your email to confirm your account!');
+    }
+  } catch(err) {
+    alert('Error: ' + err.message);
+  }
+}
 
 function onFile(e){setFile(e.target.files[0]);}
 function onDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('drag');setFile(e.dataTransfer.files[0]);}
