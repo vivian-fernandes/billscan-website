@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43FDHSD3NH"></script>
 <script>
@@ -246,6 +247,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <button class="nav-btn ghost" onclick="show('home')">Home</button>
     <button class="nav-btn ghost" onclick="show('pricing')">Pricing</button>
     <button class="nav-btn primary" onclick="show('tool')">Try Free</button>
+<button class="nav-btn outline" id="navAuthBtn" onclick="show('tool')">Sign In</button>
   </div>
 </nav>
 
@@ -438,6 +440,50 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 
 <script>
 const BACKEND = 'https://billscan-backend-production.up.railway.app';
+
+// ── SUPABASE AUTH ──
+const supabase = window.supabase.createClient(
+  'https://wtvqvczsvhijnppzjucr.supabase.co',
+  'sb_publishable_3jDpr7mzc0WvDwpSjSvBnA_qJgNo2F-'
+);
+
+// Check session on load
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) {
+    isAuthed = true;
+    localStorage.setItem('billscan_authed', 'true');
+    document.getElementById('attemptsBar').style.display = 'none';
+    updateNavUser(session.user);
+  }
+});
+
+// Listen for auth changes
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    isAuthed = true;
+    localStorage.setItem('billscan_authed', 'true');
+    document.getElementById('authWall').classList.remove('show');
+    document.getElementById('attemptsBar').style.display = 'none';
+    updateNavUser(session.user);
+    if(typeof gtag !== 'undefined') gtag('event', 'sign_in', {method: 'google'});
+  }
+  if (event === 'SIGNED_OUT') {
+    isAuthed = false;
+    localStorage.removeItem('billscan_authed');
+    updateNavUser(null);
+  }
+});
+
+function updateNavUser(user) {
+  const btn = document.getElementById('navAuthBtn');
+  if (user) {
+    btn.textContent = '👤 ' + (user.email?.split('@')[0] || 'Account');
+    btn.onclick = () => supabase.auth.signOut();
+  } else {
+    btn.textContent = 'Sign In';
+    btn.onclick = () => show('tool');
+  }
+}
 // ── FREE ATTEMPTS — persisted in localStorage ──
 const MAX_ATTEMPTS = 2;
 let isAuthed = false;
