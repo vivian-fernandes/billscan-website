@@ -219,6 +219,44 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 .footer-link:hover { color:var(--text); }
 .footer-copy { font-size:12px; color:var(--muted); }
 
+/* NAV DROPDOWN */
+.nav-profile { position:relative; }
+.nav-profile-btn {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 14px; border-radius:8px;
+  background:var(--surface); border:1px solid var(--border2);
+  font-size:13px; font-weight:600; cursor:pointer;
+  font-family:'Outfit',sans-serif; transition:all 0.15s; color:var(--text);
+}
+.nav-profile-btn:hover { background:var(--surface2); }
+.nav-profile-avatar {
+  width:26px; height:26px; border-radius:50%;
+  background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800; flex-shrink:0;
+}
+.nav-dropdown {
+  display:none; position:absolute; top:calc(100% + 8px); right:0;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; min-width:210px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:200; overflow:hidden;
+}
+.nav-dropdown.open { display:block; animation:dropIn 0.15s ease; }
+@keyframes dropIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+.nav-dropdown-header { padding:14px 16px 10px; border-bottom:1px solid var(--border); }
+.nav-dropdown-name { font-weight:700; font-size:14px; margin-bottom:2px; }
+.nav-dropdown-email { font-size:12px; color:var(--muted); }
+.nav-dropdown-item {
+  display:flex; align-items:center; gap:10px;
+  padding:11px 16px; font-size:14px; font-weight:500;
+  cursor:pointer; transition:background 0.15s;
+  background:none; border:none; width:100%;
+  text-align:left; font-family:'Outfit',sans-serif; color:var(--text);
+}
+.nav-dropdown-item:hover { background:var(--surface2); }
+.nav-dropdown-item.danger { color:var(--danger); }
+.nav-dropdown-item.danger:hover { background:#fef2f2; }
+.nav-dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
 .wa-float { position:fixed; bottom:20px; right:20px; z-index:90; background:#25d366; color:#fff; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(37,211,102,0.35); cursor:pointer; text-decoration:none; transition:transform 0.2s; border:none; }
 .wa-float:hover { transform:scale(1.08); }
 
@@ -240,6 +278,23 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <button class="nav-btn ghost" onclick="window._show && window._show('pricing')">Pricing</button>
     <button class="nav-btn primary" onclick="window._show && window._show('tool')">Try Free</button>
 <button class="nav-btn outline" id="navAuthBtn" onclick="fakeAuth()">Sign In</button>
+<div class="nav-profile" id="navProfile" style="display:none">
+  <button class="nav-profile-btn" id="navProfileBtn" onclick="toggleDropdown()">
+    <div class="nav-profile-avatar" id="navAvatar">?</div>
+    <span id="navProfileName">Account</span>
+    <span style="color:var(--muted);font-size:10px;margin-left:2px">▾</span>
+  </button>
+  <div class="nav-dropdown" id="navDropdown">
+    <div class="nav-dropdown-header">
+      <div class="nav-dropdown-name" id="dropdownName">—</div>
+      <div class="nav-dropdown-email" id="dropdownEmail">—</div>
+    </div>
+    <button class="nav-dropdown-item" onclick="show('tool');closeDropdown()">🔍 Extract Invoice</button>
+    <button class="nav-dropdown-item" onclick="show('pricing');closeDropdown()">💳 Pricing</button>
+    <div class="nav-dropdown-divider"></div>
+    <button class="nav-dropdown-item danger" onclick="confirmSignOut()">🚪 Sign Out</button>
+  </div>
+</div>
   </div>
 </nav>
 
@@ -450,21 +505,50 @@ async function verifySession() {
 }
 
 function updateNavUser(user) {
-  const btn = document.getElementById('navAuthBtn');
-  if (!btn) return;
+  const signInBtn = document.getElementById('navAuthBtn');
+  const profileEl = document.getElementById('navProfile');
+  if (!signInBtn || !profileEl) return;
   if (user) {
-    btn.textContent = '👤 ' + (user.name?.split(' ')[0] || user.email?.split('@')[0] || 'Account');
-    btn.onclick = () => signOut();
+    signInBtn.style.display = 'none';
+    profileEl.style.display = 'block';
+    const name = user.name || user.email || 'U';
+    const initials = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('navAvatar').textContent = initials;
+    document.getElementById('navProfileName').textContent = name.split(' ')[0] || name.split('@')[0];
+    document.getElementById('dropdownName').textContent = user.name || 'Account';
+    document.getElementById('dropdownEmail').textContent = user.email || '';
   } else {
-    btn.textContent = 'Sign In';
-    btn.onclick = () => show('tool');
+    signInBtn.style.display = 'block';
+    profileEl.style.display = 'none';
+    closeDropdown();
   }
 }
+
+function toggleDropdown() {
+  document.getElementById('navDropdown').classList.toggle('open');
+}
+
+function closeDropdown() {
+  const d = document.getElementById('navDropdown');
+  if (d) d.classList.remove('open');
+}
+
+function confirmSignOut() {
+  closeDropdown();
+  if(confirm('Sign out of BillScan AI?')) signOut();
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', (e) => {
+  const profile = document.getElementById('navProfile');
+  if (profile && !profile.contains(e.target)) closeDropdown();
+});
 
 function signOut() {
   clearSession();
   isAuthed = false;
   updateNavUser(null);
+  updateUI();
 }
 
 // ── HANDLE OAUTH REDIRECT ──
@@ -620,7 +704,9 @@ function showErr(m){const b=document.getElementById('errBox');b.textContent='⚠
 function hideErr(){document.getElementById('errBox').classList.remove('show');}
 function dlCSV(){if(!extractedData)return;const d=extractedData;const rows=[['BillScan AI Export'],['Date',new Date().toLocaleDateString('en-IN')],[],['VENDOR'],['Name',d.vendor?.name||''],['GSTIN',d.vendor?.gstin||''],[],['INVOICE'],['Number',d.invoice?.number||''],['Date',d.invoice?.date||''],[],['TAX'],['Subtotal',d.taxes?.subtotal||''],['CGST',d.taxes?.cgst||''],['SGST',d.taxes?.sgst||''],['IGST',d.taxes?.igst||''],['Grand Total',d.taxes?.grand_total||'']];const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`invoice_${d.invoice?.number||'extracted'}.csv`;a.click();}
 function cpJSON(){if(!extractedData)return;navigator.clipboard.writeText(JSON.stringify(extractedData,null,2));const b=document.querySelectorAll('.action-btn.outline')[0];b.textContent='✓ Copied!';setTimeout(()=>b.textContent='📋 JSON',2000);}
-function openWA(plan){window.open(`https://billscan-backend-production.up.railway.app/api/support?plan=${encodeURIComponent(plan)}`,'_blank');}
+function openWA(plan){
+  window.location.href = 'https://billscan-backend-production.up.railway.app/api/support?plan=' + encodeURIComponent(plan);
+}
 </script>
 </body>
 </html>
