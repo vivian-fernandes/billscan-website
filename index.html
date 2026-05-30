@@ -655,7 +655,7 @@ async function doExtract(){
   try{
     const fd=new FormData();
     fd.append('invoice',currentFile);
-    const res=await fetch(`${BACKEND}/api/extract`,{method:'POST',headers:{'x-api-key':'billscan2025secure'},body:fd});
+    const res=await fetch(`${BACKEND}/api/extract`,{method:'POST',body:fd});
     if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||'Server error');}
     const result=await res.json();
     if(!result.success)throw new Error(result.error||'Extraction failed');
@@ -744,7 +744,7 @@ async function startPayment(plan) {
     if (!user) { alert('Session expired. Please sign in again.'); fakeAuth(); return; }
     const res = await fetch(BACKEND + '/api/payment/subscribe', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': 'billscan2025secure', 'x-session-token': token },
+      headers: { 'Content-Type': 'application/json', 'x-session-token': token },
       body: JSON.stringify({ plan: plan, email: user.email, name: user.name })
     });
     const data = await res.json();
