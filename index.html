@@ -383,7 +383,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <div class="paywall" id="paywall">
       <div class="paywall-icon">🚀</div>
       <div class="paywall-title">Upgrade for unlimited access</div>
-      <div class="paywall-sub">Plans start at ₹4,999/month — less than one junior staff salary. Process unlimited invoices.</div>
+      <div class="paywall-sub">Plans start at ₹999/month — less than one junior staff salary. Process unlimited invoices.</div>
       <button class="paywall-btn" onclick="window._show && window._show('pricing')">See Plans →</button>
       <button class="paywall-skip" onclick="window._show && window._show('pricing')">View all pricing</button>
     </div>
@@ -424,7 +424,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <div class="pricing-grid">
       <div class="price-card">
         <div class="price-name">Starter</div>
-        <div class="price-amount">₹4,999 <span>/ mo</span></div>
+        <div class="price-amount">₹999 <span>/ mo</span></div>
         <div class="price-desc">For small CA practices with 1–2 staff.</div>
         <ul class="price-features">
           <li>500 invoices/month</li>
@@ -434,12 +434,12 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
           <li class="no">API access</li>
           <li class="no">Priority support</li>
         </ul>
-        <button class="price-cta ghost" onclick="openWA('Starter')">Get Started →</button>
+        <button class="price-cta ghost" onclick="startPayment('starter')">Get Started →</button>
       </div>
       <div class="price-card featured">
         <div class="price-popular">MOST POPULAR</div>
         <div class="price-name">Professional</div>
-        <div class="price-amount">₹9,999 <span>/ mo</span></div>
+        <div class="price-amount">₹2,999 <span>/ mo</span></div>
         <div class="price-desc">For established firms with multiple clients.</div>
         <ul class="price-features">
           <li>2,000 invoices/month</li>
@@ -449,7 +449,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
           <li>API access</li>
           <li>4hr priority response</li>
         </ul>
-        <button class="price-cta main" onclick="openWA('Professional')">Get Started →</button>
+        <button class="price-cta main" onclick="startPayment('pro')">Get Started →</button>
       </div>
       <div class="price-card">
         <div class="price-name">Enterprise</div>
