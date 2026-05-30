@@ -686,18 +686,41 @@ function fmt(n){return Number(n).toLocaleString('en-IN',{minimumFractionDigits:2
 function shareWA(){
   if(!extractedData) return;
   const d = extractedData;
-  const msg = [
-    '✅ Invoice extracted by BillScan AI',
-    '',
-    d.vendor?.name ? 'Vendor: ' + d.vendor.name : '',
-    d.vendor?.gstin ? 'GSTIN: ' + d.vendor.gstin : '',
-    d.invoice?.number ? 'Invoice No: ' + d.invoice.number : '',
-    d.invoice?.date ? 'Date: ' + d.invoice.date : '',
-    d.taxes?.grand_total ? 'Grand Total: ₹' + Number(d.taxes.grand_total).toLocaleString('en-IN') : '',
-    '',
-    'Powered by billscan.in'
-  ].filter(Boolean).join('\n');
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+
+  // Step 1 — Download the CSV file
+  const rows = [
+    ['BillScan AI Export'],['Date', new Date().toLocaleDateString('en-IN')],[],
+    ['VENDOR'],['Name', d.vendor?.name||''],['GSTIN', d.vendor?.gstin||''],['Address', d.vendor?.address||''],[],
+    ['INVOICE'],['Invoice No', d.invoice?.number||''],['Date', d.invoice?.date||''],['Place of Supply', d.invoice?.place_of_supply||''],[],
+    ['BUYER'],['Name', d.buyer?.name||''],['GSTIN', d.buyer?.gstin||''],[],
+    ['TAX SUMMARY'],['Subtotal', d.taxes?.subtotal||''],['CGST', d.taxes?.cgst||''],
+    ['SGST', d.taxes?.sgst||''],['IGST', d.taxes?.igst||''],
+    ['Grand Total', d.taxes?.grand_total||''],['Amount in Words', d.taxes?.total_in_words||'']
+  ];
+  const csv = rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `invoice_${d.invoice?.number||'extracted'}_billscan.csv`;
+  a.click();
+
+  // Step 2 — Open WhatsApp with a message after short delay
+  setTimeout(() => {
+    const msg = [
+      '📊 *Invoice extracted by BillScan AI*',
+      '',
+      d.vendor?.name ? '*Vendor:* ' + d.vendor.name : '',
+      d.vendor?.gstin ? '*GSTIN:* ' + d.vendor.gstin : '',
+      d.invoice?.number ? '*Invoice No:* ' + d.invoice.number : '',
+      d.invoice?.date ? '*Date:* ' + d.invoice.date : '',
+      d.taxes?.grand_total ? '*Grand Total:* ₹' + Number(d.taxes.grand_total).toLocaleString('en-IN') : '',
+      '',
+      '📎 _CSV file downloaded — attach it to this message_',
+      '',
+      '_Powered by billscan.in_'
+    ].filter(Boolean).join('\n');
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }, 1000);
 }
 
 function resetTool(){extractedData=null;clearFile();document.getElementById('resultsBox').classList.remove('show');document.getElementById('totalCard').style.display='none';window.scrollTo(0,0);}
