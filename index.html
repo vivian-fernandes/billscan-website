@@ -484,7 +484,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   </footer>
 </div>
 
-<a class="wa-float" href="https://billscan-backend-production.up.railway.app/api/support" target="_blank">💬</a>
+<a class="wa-float" href="https://api.billscan.in/api/support" target="_blank">💬</a>
 
 <script>
 const BACKEND = 'https://api.billscan.in';
@@ -757,7 +757,8 @@ function renderResults(d){
   document.getElementById('taxGrid').innerHTML=[['Subtotal',d.taxes?.subtotal?'₹'+fmt(d.taxes.subtotal):null],['CGST',d.taxes?.cgst?'₹'+fmt(d.taxes.cgst):null],['SGST',d.taxes?.sgst?'₹'+fmt(d.taxes.sgst):null],['IGST',d.taxes?.igst?'₹'+fmt(d.taxes.igst):null],['Grand Total',d.taxes?.grand_total?'₹'+fmt(d.taxes.grand_total):null]].filter(([,v])=>v).map(([k,v])=>row(k,v,'green')).join('');
   document.getElementById('resultsBox').classList.add('show');
 }
-function row(k,v,cls=''){const val=v?`<div class="data-val ${cls}">${v}</div>`:`<div class="data-val empty">Not found</div>`;return `<div class="data-row"><div class="data-key">${k}</div>${val}</div>`;}
+function escHtml(s){const d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+function row(k,v,cls=''){const val=v?`<div class="data-val ${cls}">${escHtml(v)}</div>`:`<div class="data-val empty">Not found</div>`;return `<div class="data-row"><div class="data-key">${escHtml(k)}</div>${val}</div>`;}
 function fmt(n){return Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function shareWA(){
   if(!extractedData) return;
@@ -805,7 +806,7 @@ function hideErr(){document.getElementById('errBox').classList.remove('show');}
 function dlCSV(){if(!extractedData)return;const d=extractedData;const rows=[['BillScan AI Export'],['Date',new Date().toLocaleDateString('en-IN')],[],['VENDOR'],['Name',d.vendor?.name||''],['GSTIN',d.vendor?.gstin||''],[],['INVOICE'],['Number',d.invoice?.number||''],['Date',d.invoice?.date||''],[],['TAX'],['Subtotal',d.taxes?.subtotal||''],['CGST',d.taxes?.cgst||''],['SGST',d.taxes?.sgst||''],['IGST',d.taxes?.igst||''],['Grand Total',d.taxes?.grand_total||'']];const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`invoice_${d.invoice?.number||'extracted'}.csv`;a.click();}
 function cpJSON(){if(!extractedData)return;navigator.clipboard.writeText(JSON.stringify(extractedData,null,2));const b=document.querySelectorAll('.action-btn.outline')[0];b.textContent='✓ Copied!';setTimeout(()=>b.textContent='📋 JSON',2000);}
 function openWA(plan){
-  window.location.href = 'https://billscan-backend-production.up.railway.app/api/support?plan=' + encodeURIComponent(plan);
+  window.location.href = BACKEND + '/api/support?plan=' + encodeURIComponent(plan);
 }
 
 async function startPayment(plan) {
