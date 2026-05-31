@@ -1020,7 +1020,14 @@ async function doExtract(){
     }
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display='block';
-    renderResults(extractedData);
+    // Multi-invoice PDF: reuse bulk results display
+    if(result.invoices && result.invoices.length > 1){
+      bulkResults = result.invoices.map((inv, i) => ({ name: 'Receipt '+(i+1), success: true, error: null, data: inv }));
+      renderBulkResults();
+      document.getElementById('bulkResultsBadge').textContent = result.invoices.length + ' receipts found';
+    } else {
+      renderResults(extractedData);
+    }
     if(result.remaining===0&&!isAuthed) showQuotaExhaustedInline();
     if(result.remaining===0&&isAuthed) document.getElementById('paywall').classList.add('show');
   }catch(err){
