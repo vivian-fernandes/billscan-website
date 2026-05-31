@@ -847,7 +847,17 @@ function signInWithEmail() {
 
 function onFile(e){setFile(e.target.files[0]);}
 function onDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('drag');setFile(e.dataTransfer.files[0]);}
-function setFile(f){if(!f)return;currentFile=f;document.getElementById('pillName').textContent=f.name;document.getElementById('filePill').classList.add('show');document.getElementById('extractBtn').disabled=false;}
+function setFile(f){
+  if(!f)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    currentFile=new File([e.target.result],f.name,{type:f.type});
+    document.getElementById('pillName').textContent=f.name;
+    document.getElementById('filePill').classList.add('show');
+    document.getElementById('extractBtn').disabled=false;
+  };
+  reader.readAsArrayBuffer(f);
+}
 function clearFile(){currentFile=null;document.getElementById('fileIn').value='';document.getElementById('filePill').classList.remove('show');document.getElementById('extractBtn').disabled=true;}
 
 async function doExtract(){
