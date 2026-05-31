@@ -197,6 +197,27 @@ nav {
 .pricing-grid { display:flex; flex-direction:column; gap:14px; margin-top:28px; }
 .price-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px 20px; position:relative; box-shadow:var(--shadow-sm); }
 .price-card.featured { border-color:var(--accent); border-width:2px; background:#fff; }
+
+/* ── BULK UPLOAD ── */
+.bulk-queue { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.bulk-item { display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 14px; }
+.bulk-item-icon { font-size:16px; flex-shrink:0; }
+.bulk-item-name { flex:1; font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bulk-item-status { font-size:13px; flex-shrink:0; width:20px; text-align:center; }
+.bulk-item.done { border-color:rgba(22,163,74,0.3); background:var(--accent-light); }
+.bulk-item.error { border-color:rgba(220,38,38,0.3); background:#fef2f2; }
+.bulk-item.processing { border-color:var(--accent2); background:var(--accent2-light); }
+.bulk-progress { background:var(--surface2); border-radius:8px; height:6px; margin-bottom:12px; overflow:hidden; }
+.bulk-progress-bar { height:100%; background:var(--accent); border-radius:8px; transition:width 0.3s; }
+.bulk-result-card { border:1px solid var(--border); border-radius:10px; margin-bottom:8px; overflow:hidden; }
+.bulk-result-hdr { display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; background:var(--surface); user-select:none; }
+.bulk-result-hdr:hover { background:var(--surface2); }
+.bulk-result-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; flex-shrink:0; }
+.bulk-result-badge.ok { background:var(--accent-light); color:var(--accent); }
+.bulk-result-badge.err { background:#fef2f2; color:var(--danger); }
+.bulk-result-summary { font-size:12px; color:var(--muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bulk-result-body { display:none; padding:0 14px 14px; border-top:1px solid var(--border); }
+.bulk-result-body.open { display:block; }
 .price-popular { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; border-radius:20px; padding:4px 16px; font-size:11px; font-weight:800; letter-spacing:0.05em; white-space:nowrap; }
 .price-name { font-size:12px; font-weight:700; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px; }
 .price-amount { font-size:36px; font-weight:800; letter-spacing:-0.02em; margin-bottom:4px; }
@@ -458,15 +479,24 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <div id="extractorUI">
       <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileIn').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDrop(event)">
         <div class="upload-icon">📄</div>
-        <div class="upload-title">Drop your invoice here</div>
-        <div class="upload-sub">PDF · JPG · PNG · WhatsApp photo</div>
-        <div class="upload-inner-btn">Choose File</div>
+        <div class="upload-title" id="uploadTitle">Drop your invoice here</div>
+        <div class="upload-sub">PDF · JPG · PNG · WhatsApp photo · <strong>Select multiple files for bulk (1 invoice per file)</strong></div>
+        <div class="upload-inner-btn" id="uploadBtn">Choose File</div>
       </div>
-      <input type="file" id="fileIn" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none" onchange="onFile(event)">
+      <input type="file" id="fileIn" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none" multiple onchange="onFile(event)">
+
+      <!-- Single mode -->
       <div class="file-pill" id="filePill"><span>📄</span><span class="pill-name" id="pillName"></span><button class="pill-rm" onclick="clearFile()">✕</button></div>
+
+      <!-- Bulk mode queue -->
+      <div id="bulkQueue" style="display:none" class="bulk-queue"></div>
+      <div class="bulk-progress" id="bulkProgressBar" style="display:none"><div class="bulk-progress-bar" id="bulkProgressFill" style="width:0%"></div></div>
+
       <div class="error-box" id="errBox"></div>
-      <button class="extract-btn" id="extractBtn" onclick="doExtract()" disabled>🔍 Extract Invoice Data</button>
-      <div class="security-note">🔒 Your invoice is never stored. Processed in memory, deleted immediately.</div>
+      <button class="extract-btn" id="extractBtn" onclick="handleExtract()" disabled>🔍 Extract Invoice Data</button>
+      <div class="security-note">🔒 Your invoices are never stored. Processed in memory, deleted immediately.</div>
+
+      <!-- Single mode processing/results -->
       <div class="proc-box" id="procBox"><div class="spinner"></div><div style="font-weight:700;margin-bottom:6px">Reading your invoice...</div><div style="font-size:13px;color:var(--muted)">AI extracting every GST field</div></div>
       <div class="results-box" id="resultsBox">
         <div class="results-hdr"><div class="results-title">Extracted Data</div><div class="results-badge">✓ Complete</div></div>
@@ -475,8 +505,16 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
         <div class="data-section"><div class="data-section-hdr">🧾 Invoice</div><div id="invoiceGrid"></div></div>
         <div class="data-section"><div class="data-section-hdr">💰 Tax</div><div id="taxGrid"></div></div>
         <div class="action-row"><button class="action-btn green" onclick="dlCSV()">⬇ CSV</button><button class="action-btn outline" onclick="cpJSON()">📋 JSON</button></div>
-<button class="action-btn outline" style="width:100%;margin-bottom:10px;background:#25d366;color:#fff;border:none" onclick="shareWA()">📤 Share via WhatsApp</button>
+        <button class="action-btn outline" style="width:100%;margin-bottom:10px;background:#25d366;color:#fff;border:none" onclick="shareWA()">📤 Share via WhatsApp</button>
         <button class="reset-btn" id="resetBtn" onclick="resetTool()">↩ Extract another</button>
+      </div>
+
+      <!-- Bulk mode results -->
+      <div id="bulkResultsBox" style="display:none">
+        <div class="results-hdr"><div class="results-title">Bulk Results</div><div class="results-badge" id="bulkResultsBadge"></div></div>
+        <div id="bulkResultsList"></div>
+        <button class="action-btn green" style="width:100%;margin-top:4px;margin-bottom:8px" onclick="dlBulkCSV()">⬇ Download All as CSV</button>
+        <button class="reset-btn" onclick="resetTool()">↩ Extract more</button>
       </div>
     </div>
   </div>
@@ -788,6 +826,9 @@ let isAuthed = false;
 let currentFile = null;
 let extractedData = null;
 let remainingExtractions = 2; // optimistic default; updated from backend after each extraction
+let bulkFiles = [];
+let bulkResults = [];
+let isBulkMode = false;
 
 // ── ON LOAD ──
 window.addEventListener('load', () => {
@@ -935,8 +976,8 @@ function signInWithEmail() {
   alert('Email sign in coming soon! Please use Google Sign In for now.');
 }
 
-function onFile(e){setFile(e.target.files[0]);}
-function onDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('drag');setFile(e.dataTransfer.files[0]);}
+function onFile(e){const f=e.target.files;if(f.length>1)setBulkFiles(Array.from(f));else if(f.length===1){isBulkMode=false;setFile(f[0]);}}
+function onDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('drag');const f=e.dataTransfer.files;if(f.length>1)setBulkFiles(Array.from(f));else if(f.length===1){isBulkMode=false;setFile(f[0]);}}
 function setFile(f){
   if(!f)return;
   const reader=new FileReader();
@@ -1041,18 +1082,26 @@ function shareWA(){
 
 function resetTool(){
   extractedData=null;
+  bulkFiles=[]; bulkResults=[]; isBulkMode=false;
   clearFile();
   document.getElementById('resultsBox').classList.remove('show');
+  document.getElementById('bulkResultsBox').style.display='none';
+  document.getElementById('bulkResultsList').innerHTML='';
+  document.getElementById('bulkQueue').style.display='none';
+  document.getElementById('bulkProgressBar').style.display='none';
+  document.getElementById('bulkProgressFill').style.width='0%';
   document.getElementById('totalCard').style.display='none';
   document.getElementById('signInBanner').style.display='none';
   document.getElementById('uploadZone').style.display='';
+  document.getElementById('uploadTitle').textContent='Drop your invoice here';
   document.getElementById('extractBtn').style.display='block';
+  document.getElementById('extractBtn').textContent='🔍 Extract Invoice Data';
+  document.getElementById('extractBtn').disabled=true;
   const secNote=document.querySelector('.security-note');
   if(secNote) secNote.style.display='';
   const resetBtn=document.getElementById('resetBtn');
   if(resetBtn) resetBtn.style.display='';
   window.scrollTo(0,0);
-  // If quota still exhausted, show inline sign-in again
   if(!isAuthed && remainingExtractions===0) showQuotaExhaustedInline();
 }
 function showErr(m){const b=document.getElementById('errBox');b.textContent='⚠ '+m;b.classList.add('show');}
@@ -1071,6 +1120,129 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') { ['privacy',
 
 function openWA(plan){
   window.location.href = 'mailto:support.billscan@gmail.com?subject=' + encodeURIComponent(plan + ' Plan Enquiry');
+}
+
+// ── BULK UPLOAD ──
+function handleExtract(){if(isBulkMode)doBulkExtract();else doExtract();}
+
+function setBulkFiles(files){
+  isBulkMode=true;
+  bulkFiles=[];
+  bulkResults=[];
+  const readers=files.map(f=>new Promise(resolve=>{
+    const r=new FileReader();
+    r.onload=e=>{bulkFiles.push({file:new File([e.target.result],f.name,{type:f.type}),name:f.name,status:'pending'});resolve();};
+    r.readAsArrayBuffer(f);
+  }));
+  Promise.all(readers).then(()=>{
+    bulkFiles.sort((a,b)=>a.name.localeCompare(b.name));
+    renderBulkQueue();
+    document.getElementById('filePill').classList.remove('show');
+    document.getElementById('uploadTitle').textContent=bulkFiles.length+' files selected';
+    document.getElementById('bulkQueue').style.display='flex';
+    document.getElementById('extractBtn').disabled=false;
+    document.getElementById('extractBtn').textContent='🔍 Extract All ('+bulkFiles.length+' invoices)';
+  });
+}
+
+function renderBulkQueue(){
+  const icons={pending:'⏳',processing:'⚙️',done:'✅',error:'❌'};
+  document.getElementById('bulkQueue').innerHTML=bulkFiles.map((f,i)=>`<div class="bulk-item ${f.status!=='pending'?f.status:''}" id="bulk-item-${i}"><span class="bulk-item-icon">📄</span><span class="bulk-item-name" title="${escHtml(f.name)}">${escHtml(f.name)}</span><span class="bulk-item-status">${icons[f.status]||'⏳'}</span></div>`).join('');
+}
+
+async function doBulkExtract(){
+  if(!bulkFiles.length)return;
+  hideErr();
+  bulkResults=[];
+  const token=getSessionToken();
+  const headers={};
+  if(token)headers['x-session-token']=token;
+  document.getElementById('extractBtn').disabled=true;
+  document.getElementById('extractBtn').textContent='Processing...';
+  document.getElementById('bulkProgressBar').style.display='block';
+  document.getElementById('bulkResultsBox').style.display='none';
+  let done=0; let stopped=false;
+  for(let i=0;i<bulkFiles.length;i++){
+    if(stopped)break;
+    bulkFiles[i].status='processing';
+    renderBulkQueue();
+    updateBulkProgress(i,bulkFiles.length);
+    try{
+      const fd=new FormData();
+      fd.append('invoice',bulkFiles[i].file);
+      const res=await fetch(`${BACKEND}/api/extract`,{method:'POST',headers,body:fd});
+      const result=await res.json().catch(()=>({}));
+      if(!res.ok){
+        const code=result.code||'';
+        if(code==='ip_limit_reached'||code==='subscription_required'||code==='monthly_limit_reached'||code==='quota_exceeded'){
+          bulkFiles[i].status='error';
+          bulkResults.push({name:bulkFiles[i].name,success:false,error:'Quota exceeded',data:null});
+          for(let j=i+1;j<bulkFiles.length;j++){bulkFiles[j].status='error';bulkResults.push({name:bulkFiles[j].name,success:false,error:'Skipped — quota exceeded',data:null});}
+          stopped=true;
+          renderBulkQueue();
+          showErr('Quota reached after '+done+' of '+bulkFiles.length+' files. Upgrade for more.');
+          if(!isAuthed)showAuthWall();else document.getElementById('paywall').classList.add('show');
+          break;
+        }
+        throw new Error(result.error||'Server error');
+      }
+      if(!result.success)throw new Error(result.error||'Extraction failed');
+      bulkFiles[i].status='done';
+      bulkResults.push({name:bulkFiles[i].name,success:true,error:null,data:result.data});
+      done++;
+      if(result.remaining!=null)remainingExtractions=result.remaining;
+    }catch(err){
+      bulkFiles[i].status='error';
+      bulkResults.push({name:bulkFiles[i].name,success:false,error:err.message,data:null});
+    }
+    renderBulkQueue();
+    updateBulkProgress(i+1,bulkFiles.length);
+  }
+  updateBulkProgress(bulkFiles.length,bulkFiles.length);
+  renderBulkResults();
+  if(isAuthed)await checkAndApplyQuota();
+  else updateUI(remainingExtractions);
+  document.getElementById('extractBtn').disabled=false;
+  document.getElementById('extractBtn').textContent='🔍 Extract All ('+bulkFiles.length+' invoices)';
+}
+
+function updateBulkProgress(done,total){
+  document.getElementById('bulkProgressFill').style.width=(total>0?Math.round(done/total*100):0)+'%';
+}
+
+function renderBulkResults(){
+  const success=bulkResults.filter(r=>r.success).length;
+  document.getElementById('bulkResultsBadge').textContent=success+'/'+bulkResults.length+' extracted';
+  document.getElementById('bulkResultsList').innerHTML=bulkResults.map((r,i)=>{
+    const d=r.data;
+    let summary=r.error||'';
+    if(d){const parts=[d.vendor?.name,d.invoice?.number?'#'+d.invoice.number:null,d.taxes?.grand_total?'₹'+fmt(d.taxes.grand_total):null].filter(Boolean);summary=parts.join(' · ')||'Extracted';}
+    return `<div class="bulk-result-card"><div class="bulk-result-hdr" onclick="toggleBulkResult(${i})"><span style="font-size:16px">${r.success?'✅':'❌'}</span><span class="bulk-result-summary" title="${escHtml(r.name)}">${escHtml(r.name)}</span><span class="bulk-result-badge ${r.success?'ok':'err'}">${escHtml(r.success?summary:'Failed')}</span><span style="font-size:11px;color:var(--muted);margin-left:4px">▾</span></div><div class="bulk-result-body" id="bulk-result-body-${i}">${r.success&&d?renderBulkDetail(d):`<div style="color:var(--danger);font-size:13px;padding:10px 0">${escHtml(r.error||'Unknown error')}</div>`}</div></div>`;
+  }).join('');
+  document.getElementById('bulkResultsBox').style.display='block';
+}
+
+function renderBulkDetail(d){
+  const rows=[['Vendor',d.vendor?.name],['GSTIN',d.vendor?.gstin],['Invoice No.',d.invoice?.number],['Date',d.invoice?.date],['Grand Total',d.taxes?.grand_total?'₹'+fmt(d.taxes.grand_total):null]].filter(([,v])=>v);
+  return `<div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:10px 0">${rows.map(([k,v])=>`<div style="font-size:11px;color:var(--muted);align-self:center">${escHtml(k)}</div><div style="font-size:13px;font-weight:600">${escHtml(v)}</div>`).join('')}</div>`;
+}
+
+function toggleBulkResult(i){const b=document.getElementById('bulk-result-body-'+i);if(b)b.classList.toggle('open');}
+
+function dlBulkCSV(){
+  if(!bulkResults.length)return;
+  const hdr=['File','Vendor Name','Vendor GSTIN','Vendor Address','Buyer Name','Buyer GSTIN','Invoice No','Invoice Date','Place of Supply','Subtotal','CGST','SGST','IGST','Grand Total','Amount in Words'];
+  const rows=[hdr];
+  bulkResults.forEach(r=>{
+    if(!r.success||!r.data){rows.push([r.name,...Array(hdr.length-1).fill('')]);return;}
+    const d=r.data;
+    rows.push([r.name,d.vendor?.name||'',d.vendor?.gstin||'',d.vendor?.address||'',d.buyer?.name||'',d.buyer?.gstin||'',d.invoice?.number||'',d.invoice?.date||'',d.invoice?.place_of_supply||'',d.taxes?.subtotal||'',d.taxes?.cgst||'',d.taxes?.sgst||'',d.taxes?.igst||'',d.taxes?.grand_total||'',d.taxes?.total_in_words||'']);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`billscan_bulk_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
 }
 
 async function startPayment(plan) {
