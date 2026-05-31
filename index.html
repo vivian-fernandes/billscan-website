@@ -612,6 +612,18 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
         </ul>
         <button class="price-cta ghost" onclick="startPayment('pro')">Get Started →</button>
       </div>
+
+      <!-- Tester plan — visible only for vivianfernandes55555@gmail.com -->
+      <div class="price-card" id="testerPlanCard" style="display:none;border-color:#f59e0b;border-width:2px;background:#fffbeb">
+        <div class="price-name" style="color:#d97706">🧪 Tester (Internal)</div>
+        <div class="price-amount">₹1 <span>/ mo</span></div>
+        <div class="price-desc">Internal test plan — not available to the public.</div>
+        <ul class="price-features">
+          <li>Same access as Basic (150/mo)</li>
+          <li>For testing Razorpay flow only</li>
+        </ul>
+        <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706" onclick="startPayment('tester')">Subscribe ₹1 →</button>
+      </div>
     </div>
     <div style="margin-top:24px;background:var(--accent-light);border:1px solid rgba(22,163,74,0.2);border-radius:12px;padding:18px 16px">
       <div style="font-weight:700;margin-bottom:6px;color:var(--accent)">🔒 Zero risk</div>
@@ -803,6 +815,9 @@ function updateNavUser(user) {
     if (navHistory) navHistory.style.display = isPaidUser ? 'block' : 'none';
     if (mobileNavHistory) mobileNavHistory.style.display = isPaidUser ? 'block' : 'none';
     if (dropdownHistory) dropdownHistory.style.display = isPaidUser ? 'block' : 'none';
+    // Show tester plan card only for the test account
+    const testerCard = document.getElementById('testerPlanCard');
+    if (testerCard) testerCard.style.display = (user.email === 'vivianfernandes55555@gmail.com') ? 'block' : 'none';
   } else {
     signInBtn.style.display = 'block';
     profileEl.style.display = 'none';
@@ -815,6 +830,8 @@ function updateNavUser(user) {
     if (navHistory) navHistory.style.display = 'none';
     if (mobileNavHistory) mobileNavHistory.style.display = 'none';
     if (dropdownHistory) dropdownHistory.style.display = 'none';
+    const testerCard = document.getElementById('testerPlanCard');
+    if (testerCard) testerCard.style.display = 'none';
   }
 }
 
