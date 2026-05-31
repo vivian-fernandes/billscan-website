@@ -275,9 +275,9 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 <nav>
   <div class="logo">Bill<span>Scan</span></div>
   <div class="nav-right">
-    <button class="nav-btn ghost" onclick="window._show && window._show('home')">Home</button>
-    <button class="nav-btn ghost" onclick="window._show && window._show('pricing')">Pricing</button>
-    <button class="nav-btn primary" id="navTryFree" onclick="window._show && window._show('tool')">Try Free</button>
+    <button class="nav-btn ghost" id="navHome" onclick="window._show && window._show('home')">Home</button>
+    <button class="nav-btn ghost" id="navPricing" onclick="window._show && window._show('pricing')">Pricing</button>
+    <button class="nav-btn ghost" id="navTryFree" onclick="window._show && window._show('tool')">Try Free</button>
 <button class="nav-btn outline" id="navAuthBtn" onclick="fakeAuth()">Sign In</button>
 <div class="nav-profile" id="navProfile" style="display:none">
   <button class="nav-profile-btn" id="navProfileBtn" onclick="toggleDropdown()">
@@ -588,7 +588,7 @@ let remainingExtractions = 2; // optimistic default; updated from backend after 
 // ── ON LOAD ──
 window.addEventListener('load', () => {
   window._show = show;
-  // navAuthBtn default onclick is fakeAuth() — only override when logged in
+  updateActiveNav('home');
 
   // Handle OAuth redirect first
   handleAuthRedirect();
@@ -613,7 +613,17 @@ function show(p) {
   document.getElementById('page-'+p).classList.add('active');
   window.scrollTo(0,0);
   if(typeof gtag !== 'undefined') gtag('event', 'page_view', {page_title: p, page_location: window.location.href + '#' + p});
+  updateActiveNav(p);
   if(p === 'tool' && !isAuthed) checkAnonQuotaOnLoad();
+}
+
+function updateActiveNav(p) {
+  const map = { home: 'navHome', pricing: 'navPricing', tool: 'navTryFree' };
+  ['navHome', 'navPricing', 'navTryFree'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'nav-btn ' + (map[p] === id ? 'primary' : 'ghost');
+  });
 }
 
 function updateUI(remaining) {
