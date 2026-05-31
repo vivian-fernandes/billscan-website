@@ -856,8 +856,20 @@ async function checkAndApplyQuota() {
     const data = await res.json();
     updateQuotaBar(data);
     if (data.remaining === 0) {
-      document.getElementById('extractorUI').style.display = 'none';
-      document.getElementById('attemptsBar').style.display = 'none';
+      const hasResults = document.getElementById('resultsBox').classList.contains('show');
+      if (hasResults) {
+        // Extraction just finished — keep results visible, hide upload controls only
+        document.getElementById('uploadZone').style.display = 'none';
+        document.getElementById('extractBtn').style.display = 'none';
+        const secNote = document.querySelector('.security-note');
+        if (secNote) secNote.style.display = 'none';
+        const resetBtn = document.getElementById('resetBtn');
+        if (resetBtn) resetBtn.style.display = 'none';
+      } else {
+        // Fresh load with 0 remaining — full paywall, nothing to show
+        document.getElementById('extractorUI').style.display = 'none';
+        document.getElementById('attemptsBar').style.display = 'none';
+      }
       document.getElementById('paywall').classList.add('show');
     } else {
       document.getElementById('extractorUI').style.display = 'block';
