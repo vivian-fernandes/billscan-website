@@ -655,6 +655,12 @@ function updateQuotaBar(quota) {
   }
 }
 
+function showAuthWall() {
+  document.getElementById('attemptsBar').style.display = 'none';
+  document.getElementById('extractorUI').style.display = 'none';
+  document.getElementById('authWall').classList.add('show');
+}
+
 function fakeAuth() {
   window.location.href = AUTH_BASE + '/google';
 }
@@ -684,7 +690,7 @@ async function doExtract(){
     const result=await res.json().catch(()=>({}));
     if(!res.ok){
       const code=result.code||'';
-      if(code==='ip_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; if(isAuthed){ document.getElementById('paywall').classList.add('show'); } else { document.getElementById('authWall').classList.add('show'); } return; }
+      if(code==='ip_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; if(isAuthed){ document.getElementById('paywall').classList.add('show'); } else { showAuthWall(); } return; }
       if(code==='subscription_required'||code==='monthly_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; document.getElementById('paywall').classList.add('show'); return; }
       throw new Error(result.error||'Server error');
     }
@@ -698,7 +704,7 @@ async function doExtract(){
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display='block';
     renderResults(extractedData);
-    if(result.remaining===0&&!isAuthed) setTimeout(()=>document.getElementById('authWall').classList.add('show'),1000);
+    if(result.remaining===0&&!isAuthed) setTimeout(()=>showAuthWall(),1000);
     if(result.remaining===0&&isAuthed) setTimeout(()=>document.getElementById('paywall').classList.add('show'),1000);
   }catch(err){
     document.getElementById('procBox').classList.remove('show');
