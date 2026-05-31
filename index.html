@@ -465,7 +465,17 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
         <div class="data-section"><div class="data-section-hdr">💰 Tax</div><div id="taxGrid"></div></div>
         <div class="action-row"><button class="action-btn green" onclick="dlCSV()">⬇ CSV</button><button class="action-btn outline" onclick="cpJSON()">📋 JSON</button></div>
 <button class="action-btn outline" style="width:100%;margin-bottom:10px;background:#25d366;color:#fff;border:none" onclick="shareWA()">📤 Share via WhatsApp</button>
-        <button class="reset-btn" onclick="resetTool()">↩ Extract another</button>
+        <button class="reset-btn" id="resetBtn" onclick="resetTool()">↩ Extract another</button>
+      </div>
+      <div id="signInBanner" style="display:none;margin-top:12px;background:var(--surface);border:2px solid var(--border2);border-radius:16px;padding:24px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px">🔐</div>
+        <div style="font-size:17px;font-weight:800;margin-bottom:6px">Sign in to extract more</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">You've used your 2 free extractions. Sign in to continue — or upgrade for unlimited access.</div>
+        <button class="google-btn" onclick="fakeAuth()" style="margin-bottom:12px">
+          <svg class="google-logo" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <button class="paywall-skip" onclick="window._show && window._show('pricing')">View paid plans →</button>
       </div>
     </div>
   </div>
@@ -882,6 +892,18 @@ function showAuthWall() {
   document.getElementById('authWall').classList.add('show');
 }
 
+function showQuotaExhaustedInline() {
+  // Keep results visible — just hide the upload controls and show sign-in prompt
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('filePill').classList.remove('show');
+  document.getElementById('extractBtn').style.display = 'none';
+  const secNote = document.querySelector('.security-note');
+  if (secNote) secNote.style.display = 'none';
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) resetBtn.style.display = 'none';
+  document.getElementById('signInBanner').style.display = 'block';
+}
+
 async function checkAnonQuotaOnLoad() {
   try {
     const res = await fetch(`${BACKEND}/api/extract/quota`);
@@ -950,8 +972,8 @@ async function doExtract(){
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display='block';
     renderResults(extractedData);
-    if(result.remaining===0&&!isAuthed) setTimeout(()=>showAuthWall(),1000);
-    if(result.remaining===0&&isAuthed) setTimeout(()=>document.getElementById('paywall').classList.add('show'),1000);
+    if(result.remaining===0&&!isAuthed) showQuotaExhaustedInline();
+    if(result.remaining===0&&isAuthed) document.getElementById('paywall').classList.add('show');
   }catch(err){
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display='block';
@@ -1009,7 +1031,22 @@ function shareWA(){
   }, 1000);
 }
 
-function resetTool(){extractedData=null;clearFile();document.getElementById('resultsBox').classList.remove('show');document.getElementById('totalCard').style.display='none';window.scrollTo(0,0);}
+function resetTool(){
+  extractedData=null;
+  clearFile();
+  document.getElementById('resultsBox').classList.remove('show');
+  document.getElementById('totalCard').style.display='none';
+  document.getElementById('signInBanner').style.display='none';
+  document.getElementById('uploadZone').style.display='';
+  document.getElementById('extractBtn').style.display='block';
+  const secNote=document.querySelector('.security-note');
+  if(secNote) secNote.style.display='';
+  const resetBtn=document.getElementById('resetBtn');
+  if(resetBtn) resetBtn.style.display='';
+  window.scrollTo(0,0);
+  // If quota still exhausted, show inline sign-in again
+  if(!isAuthed && remainingExtractions===0) showQuotaExhaustedInline();
+}
 function showErr(m){const b=document.getElementById('errBox');b.textContent='⚠ '+m;b.classList.add('show');}
 function hideErr(){document.getElementById('errBox').classList.remove('show');}
 function dlCSV(){if(!extractedData)return;const d=extractedData;const rows=[['BillScan AI Export'],['Date',new Date().toLocaleDateString('en-IN')],[],['VENDOR'],['Name',d.vendor?.name||''],['GSTIN',d.vendor?.gstin||''],[],['INVOICE'],['Number',d.invoice?.number||''],['Date',d.invoice?.date||''],[],['TAX'],['Subtotal',d.taxes?.subtotal||''],['CGST',d.taxes?.cgst||''],['SGST',d.taxes?.sgst||''],['IGST',d.taxes?.igst||''],['Grand Total',d.taxes?.grand_total||'']];const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`invoice_${d.invoice?.number||'extracted'}.csv`;a.click();}
