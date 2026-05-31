@@ -277,7 +277,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   <div class="nav-right">
     <button class="nav-btn ghost" onclick="window._show && window._show('home')">Home</button>
     <button class="nav-btn ghost" onclick="window._show && window._show('pricing')">Pricing</button>
-    <button class="nav-btn primary" onclick="window._show && window._show('tool')">Try Free</button>
+    <button class="nav-btn primary" id="navTryFree" onclick="window._show && window._show('tool')">Try Free</button>
 <button class="nav-btn outline" id="navAuthBtn" onclick="fakeAuth()">Sign In</button>
 <div class="nav-profile" id="navProfile" style="display:none">
   <button class="nav-profile-btn" id="navProfileBtn" onclick="toggleDropdown()">
@@ -510,9 +510,11 @@ function updateNavUser(user) {
   const profileEl = document.getElementById('navProfile');
   const heroCta = document.getElementById('heroCta');
   if (!signInBtn || !profileEl) return;
+  const tryFreeBtn = document.getElementById('navTryFree');
   if (user) {
     signInBtn.style.display = 'none';
     profileEl.style.display = 'block';
+    if (tryFreeBtn) tryFreeBtn.style.display = 'none';
     const name = user.name || user.email || 'U';
     const initials = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
     document.getElementById('navAvatar').textContent = initials;
@@ -523,6 +525,7 @@ function updateNavUser(user) {
   } else {
     signInBtn.style.display = 'block';
     profileEl.style.display = 'none';
+    if (tryFreeBtn) tryFreeBtn.style.display = 'block';
     closeDropdown();
     if (heroCta) { heroCta.textContent = 'Try Free — No Signup'; }
   }
@@ -645,7 +648,7 @@ async function doExtract(){
     const result=await res.json().catch(()=>({}));
     if(!res.ok){
       const code=result.code||'';
-      if(code==='ip_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; document.getElementById('authWall').classList.add('show'); return; }
+      if(code==='ip_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; if(isAuthed){ document.getElementById('paywall').classList.add('show'); } else { document.getElementById('authWall').classList.add('show'); } return; }
       if(code==='subscription_required'||code==='monthly_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; document.getElementById('paywall').classList.add('show'); return; }
       throw new Error(result.error||'Server error');
     }
@@ -659,6 +662,7 @@ async function doExtract(){
     document.getElementById('extractBtn').style.display='block';
     renderResults(extractedData);
     if(result.remaining===0&&!isAuthed) setTimeout(()=>document.getElementById('authWall').classList.add('show'),1000);
+    if(result.remaining===0&&isAuthed) setTimeout(()=>document.getElementById('paywall').classList.add('show'),1000);
   }catch(err){
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display='block';
