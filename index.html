@@ -363,7 +363,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <p class="tool-sub">Processed in memory. Never stored. No account needed to start.</p>
 
     <div class="attempts-bar" id="attemptsBar">
-      <div><div class="attempts-label" id="attemptsLabel">2 free extractions remaining</div><div class="attempts-sub">Sign in after to get unlimited access</div></div>
+      <div><div class="attempts-label" id="attemptsLabel">2 free extractions remaining</div><div class="attempts-sub" id="attemptsSubLabel">Free trial — no account needed</div></div>
       <div class="attempts-dots"><div class="attempt-dot" id="dot1"></div><div class="attempt-dot" id="dot2"></div></div>
     </div>
 
@@ -629,11 +629,13 @@ function updateActiveNav(p) {
 function updateUI(remaining) {
   if (remaining === undefined) remaining = remainingExtractions;
   const lbl = document.getElementById('attemptsLabel');
+  const sub = document.getElementById('attemptsSubLabel');
   const d1 = document.getElementById('dot1');
   const d2 = document.getElementById('dot2');
   if(remaining>=2){lbl.textContent='2 free extractions remaining';d1.classList.remove('used');d2.classList.remove('used');}
   else if(remaining===1){lbl.textContent='1 free extraction remaining';d1.classList.remove('used');d2.classList.add('used');}
-  else{lbl.textContent='No free extractions left — sign in to continue';d1.classList.add('used');d2.classList.add('used');}
+  else{lbl.textContent='Free trial exhausted';d1.classList.add('used');d2.classList.add('used');}
+  if(sub) sub.textContent='Free trial — no account needed';
 }
 
 async function checkAndApplyQuota() {
@@ -663,7 +665,7 @@ function updateQuotaBar(quota) {
     bar.style.display = 'flex';
     const rem = quota.remaining ?? 0;
     lbl.textContent = rem > 0 ? `${rem} free extraction${rem===1?'':'s'} remaining` : 'Free trial exhausted — upgrade to continue';
-    if (sub) sub.textContent = isAuthed ? 'Subscribe to get unlimited access' : 'Sign in after to get unlimited access';
+    if (sub) sub.textContent = isAuthed ? 'Subscribe to continue' : 'Free trial — no account needed';
     document.getElementById('dot1').classList.toggle('used', rem < 2);
     document.getElementById('dot2').classList.toggle('used', rem < 1);
   } else if (quota.plan === 'starter' || quota.plan === 'pro') {
