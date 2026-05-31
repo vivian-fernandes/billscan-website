@@ -594,11 +594,12 @@ window.addEventListener('load', () => {
   handleAuthRedirect();
 
   // Verify existing session
-  verifySession().then(user => {
+  verifySession().then(async user => {
     if (user) {
       isAuthed = true;
       document.getElementById('attemptsBar').style.display = 'none';
       updateNavUser(user);
+      await checkAndApplyQuota();
     } else {
       clearSession();
       updateUI();
@@ -617,6 +618,41 @@ function updateUI(remaining) {
   if(remaining>=2){lbl.textContent='2 free extractions remaining';d1.classList.remove('used');d2.classList.remove('used');}
   else if(remaining===1){lbl.textContent='1 free extraction remaining';d1.classList.remove('used');d2.classList.add('used');}
   else{lbl.textContent='No free extractions left — sign in to continue';d1.classList.add('used');d2.classList.add('used');}
+}
+
+async function checkAndApplyQuota() {
+  const token = getSessionToken();
+  if (!token) return;
+  try {
+    const res = await fetch(`${BACKEND}/api/extract/quota`, { headers: { 'x-session-token': token } });
+    const data = await res.json();
+    updateQuotaBar(data);
+    if (data.remaining === 0) {
+      document.getElementById('extractorUI').style.display = 'none';
+      document.getElementById('paywall').classList.add('show');
+    }
+  } catch(e) {}
+}
+
+function updateQuotaBar(quota) {
+  const bar = document.getElementById('attemptsBar');
+  const lbl = document.getElementById('attemptsLabel');
+  const sub = document.querySelector('.attempts-sub');
+  if (!bar || !quota) return;
+  if (quota.plan === 'free') {
+    bar.style.display = 'flex';
+    const rem = quota.remaining ?? 0;
+    lbl.textContent = rem > 0 ? `${rem} free extraction${rem===1?'':'s'} remaining` : 'No free extractions left — upgrade to continue';
+    if (sub) sub.textContent = 'Upgrade for unlimited access';
+    document.getElementById('dot1').classList.toggle('used', rem < 2);
+    document.getElementById('dot2').classList.toggle('used', rem < 1);
+  } else if (quota.plan === 'starter' || quota.plan === 'pro') {
+    bar.style.display = 'flex';
+    lbl.textContent = `${quota.monthly_count ?? 0} / ${quota.limit} invoices used this month`;
+    if (sub) sub.textContent = quota.plan.charAt(0).toUpperCase() + quota.plan.slice(1) + ' Plan';
+    document.getElementById('dot1').style.display = 'none';
+    document.getElementById('dot2').style.display = 'none';
+  }
 }
 
 function fakeAuth() {
@@ -657,6 +693,7 @@ async function doExtract(){
     if(result.remaining!==null && result.remaining!==undefined){
       remainingExtractions=result.remaining;
       if(!isAuthed) updateUI(remainingExtractions);
+      if(isAuthed) checkAndApplyQuota();
     }
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display='block';
