@@ -306,7 +306,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <h1 class="hero-title">GST invoices,<br>read in <span class="green">seconds.</span></h1>
     <p class="hero-sub">Upload any invoice — PDF, photo, WhatsApp screenshot. AI extracts every field instantly. Tally-ready CSV. No manual typing. Ever.</p>
     <div class="hero-cta">
-      <button class="btn-lg green" onclick="window._show && window._show('tool')">Try Free — No Signup</button>
+      <button class="btn-lg green" id="heroCta" onclick="window._show && window._show('tool')">Try Free — No Signup</button>
       <button class="btn-lg neutral" onclick="window._show && window._show('pricing')">See Pricing →</button>
     </div>
     <div class="hero-stats">
@@ -508,6 +508,7 @@ async function verifySession() {
 function updateNavUser(user) {
   const signInBtn = document.getElementById('navAuthBtn');
   const profileEl = document.getElementById('navProfile');
+  const heroCta = document.getElementById('heroCta');
   if (!signInBtn || !profileEl) return;
   if (user) {
     signInBtn.style.display = 'none';
@@ -518,10 +519,12 @@ function updateNavUser(user) {
     document.getElementById('navProfileName').textContent = name.split(' ')[0] || name.split('@')[0];
     document.getElementById('dropdownName').textContent = user.name || 'Account';
     document.getElementById('dropdownEmail').textContent = user.email || '';
+    if (heroCta) { heroCta.textContent = 'Extract Invoice →'; }
   } else {
     signInBtn.style.display = 'block';
     profileEl.style.display = 'none';
     closeDropdown();
+    if (heroCta) { heroCta.textContent = 'Try Free — No Signup'; }
   }
 }
 
@@ -574,24 +577,10 @@ function handleAuthRedirect() {
     window.history.replaceState({}, '', window.location.pathname);
   }
 }
-// ── FREE ATTEMPTS — persisted in localStorage ──
-const MAX_ATTEMPTS = 2;
 let isAuthed = false;
 let currentFile = null;
 let extractedData = null;
-
-function getAttempts() {
-  return parseInt(localStorage.getItem('billscan_attempts') || '0');
-}
-function useAttempt() {
-  const used = getAttempts() + 1;
-  localStorage.setItem('billscan_attempts', used);
-  return used;
-}
-function getRemainingAttempts() {
-  return Math.max(0, MAX_ATTEMPTS - getAttempts());
-}
-let attempts = getRemainingAttempts();
+let remainingExtractions = 2; // optimistic default; updated from backend after each extraction
 
 // ── ON LOAD ──
 window.addEventListener('load', () => {
@@ -605,16 +594,11 @@ window.addEventListener('load', () => {
   verifySession().then(user => {
     if (user) {
       isAuthed = true;
-      localStorage.setItem('billscan_authed', 'true');
       document.getElementById('attemptsBar').style.display = 'none';
       updateNavUser(user);
-    } else if (localStorage.getItem('billscan_authed') === 'true') {
-      // Session expired — clear it
+    } else {
       clearSession();
-    }
-    updateUI();
-    if(getRemainingAttempts() <= 0 && !isAuthed) {
-      document.getElementById('authWall').classList.add('show');
+      updateUI();
     }
   });
 });
@@ -622,8 +606,8 @@ window.addEventListener('load', () => {
 function show(p) {
   window._show = show; document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); window.scrollTo(0,0); if(typeof gtag !== 'undefined') gtag('event', 'page_view', {page_title: p, page_location: window.location.href + '#' + p}); }
 
-function updateUI() {
-  const remaining = getRemainingAttempts();
+function updateUI(remaining) {
+  if (remaining === undefined) remaining = remainingExtractions;
   const lbl = document.getElementById('attemptsLabel');
   const d1 = document.getElementById('dot1');
   const d2 = document.getElementById('dot2');
@@ -647,7 +631,6 @@ function clearFile(){currentFile=null;document.getElementById('fileIn').value=''
 
 async function doExtract(){
   if(!currentFile)return;
-  if(getRemainingAttempts()<=0&&!isAuthed){document.getElementById('paywall').classList.add('show');return;}
   hideErr();
   document.getElementById('procBox').classList.add('show');
   document.getElementById('extractBtn').style.display='none';
@@ -655,18 +638,27 @@ async function doExtract(){
   try{
     const fd=new FormData();
     fd.append('invoice',currentFile);
-    const res=await fetch(`${BACKEND}/api/extract`,{method:'POST',body:fd});
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||'Server error');}
-    const result=await res.json();
-    if(!result.success)throw new Error(result.error||'Extraction failed');
+    const headers={};
+    const token=getSessionToken();
+    if(token) headers['x-session-token']=token;
+    const res=await fetch(`${BACKEND}/api/extract`,{method:'POST',headers,body:fd});
+    const result=await res.json().catch(()=>({}));
+    if(!res.ok){
+      const code=result.code||'';
+      if(code==='ip_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; document.getElementById('authWall').classList.add('show'); return; }
+      if(code==='subscription_required'||code==='monthly_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; document.getElementById('paywall').classList.add('show'); return; }
+      throw new Error(result.error||'Server error');
+    }
+    if(!result.success) throw new Error(result.error||'Extraction failed');
     extractedData=result.data;
-    useAttempt();
-    attempts = getRemainingAttempts();
-    updateUI();
+    if(result.remaining!==null && result.remaining!==undefined){
+      remainingExtractions=result.remaining;
+      if(!isAuthed) updateUI(remainingExtractions);
+    }
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display='block';
     renderResults(extractedData);
-    if(attempts<=0&&!isAuthed)setTimeout(()=>document.getElementById('authWall').classList.add('show'),1000);
+    if(result.remaining===0&&!isAuthed) setTimeout(()=>document.getElementById('authWall').classList.add('show'),1000);
   }catch(err){
     document.getElementById('procBox').classList.remove('show');
     document.getElementById('extractBtn').style.display='block';
