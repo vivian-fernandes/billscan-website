@@ -450,7 +450,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <div class="paywall" id="paywall">
       <div class="paywall-icon">🚀</div>
       <div class="paywall-title">Upgrade for unlimited access</div>
-      <div class="paywall-sub">Plans start at ₹999/month — less than one junior staff salary. Process unlimited invoices.</div>
+      <div class="paywall-sub">Plans start at ₹999/month. Process hundreds of invoices with zero manual effort.</div>
       <button class="paywall-btn" onclick="window._show && window._show('pricing')">See Plans →</button>
       <button class="paywall-skip" onclick="window._show && window._show('pricing')">View all pricing</button>
     </div>
@@ -491,7 +491,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <div class="pricing-grid">
       <div class="price-card">
         <div class="price-name">Basic</div>
-        <div class="price-amount">₹499 <span>/ mo</span></div>
+        <div class="price-amount">₹999 <span>/ mo</span></div>
         <div class="price-desc">For solo CAs just getting started with digital invoicing.</div>
         <ul class="price-features">
           <li>150 invoices/month</li>
@@ -504,7 +504,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
       <div class="price-card featured">
         <div class="price-popular">MOST POPULAR</div>
         <div class="price-name">Starter</div>
-        <div class="price-amount">₹999 <span>/ mo</span></div>
+        <div class="price-amount">₹2,999 <span>/ mo</span></div>
         <div class="price-desc">For small CA practices with 1–2 staff.</div>
         <ul class="price-features">
           <li>500 invoices/month</li>
@@ -516,7 +516,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
       </div>
       <div class="price-card">
         <div class="price-name">Professional</div>
-        <div class="price-amount">₹2,999 <span>/ mo</span></div>
+        <div class="price-amount">₹6,999 <span>/ mo</span></div>
         <div class="price-desc">For established CA firms managing multiple clients.</div>
         <ul class="price-features">
           <li>2,000 invoices/month</li>
@@ -622,8 +622,9 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 
     <h2>5. Paid Plans</h2>
     <ul>
-      <li><strong>Starter — ₹999/month:</strong> 500 invoice extractions per calendar month</li>
-      <li><strong>Pro — ₹2,999/month:</strong> 2,000 invoice extractions per calendar month</li>
+      <li><strong>Basic — ₹999/month:</strong> 150 invoice extractions per calendar month</li>
+      <li><strong>Starter — ₹2,999/month:</strong> 500 invoice extractions per calendar month</li>
+      <li><strong>Professional — ₹6,999/month:</strong> 2,000 invoice extractions per calendar month</li>
       <li>Unused extractions do not roll over to the next month</li>
       <li>Subscriptions renew automatically. You may cancel at any time from your account dashboard</li>
       <li>Prices are inclusive of applicable taxes</li>
@@ -1093,7 +1094,7 @@ async function startPayment(plan) {
       key: data.key_id,
       subscription_id: data.subscription_id,
       name: 'BillScan AI',
-      description: plan === 'starter' ? 'Starter Plan — ₹999/month' : 'Pro Plan — ₹2,999/month',
+      description: plan === 'basic' ? 'Basic Plan — ₹999/month' : plan === 'starter' ? 'Starter Plan — ₹2,999/month' : 'Professional Plan — ₹6,999/month',
       prefill: { email: user.email, name: user.name },
       theme: { color: '#16a34a' },
       handler: function(response) {
