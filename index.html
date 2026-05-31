@@ -259,6 +259,20 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 .nav-dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
 .wa-float { position:fixed; bottom:20px; right:20px; z-index:90; background:#25d366; color:#fff; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(37,211,102,0.35); cursor:pointer; text-decoration:none; transition:transform 0.2s; border:none; }
 .wa-float:hover { transform:scale(1.08); }
+.legal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.legal-overlay.show { opacity:1; pointer-events:auto; }
+.legal-box { background:var(--surface); border-radius:16px; max-width:660px; width:100%; max-height:88vh; overflow-y:auto; padding:32px 28px 28px; position:relative; box-shadow:var(--shadow-lg); }
+.legal-close { position:absolute; top:16px; right:16px; background:var(--surface2); border:1px solid var(--border); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px; color:var(--muted); display:flex; align-items:center; justify-content:center; }
+.legal-close:hover { color:var(--text); background:var(--border); }
+.legal-box h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
+.legal-box .legal-updated { font-size:12px; color:var(--muted); margin-bottom:24px; display:block; }
+.legal-box h2 { font-size:14px; font-weight:700; margin-top:22px; margin-bottom:7px; color:var(--text); letter-spacing:0.01em; }
+.legal-box p, .legal-box li { font-size:13.5px; color:var(--muted); line-height:1.75; }
+.legal-box ul { padding-left:18px; margin-bottom:6px; }
+.legal-box li { margin-bottom:3px; }
+.legal-box a { color:var(--accent); text-decoration:none; }
+.legal-box a:hover { text-decoration:underline; }
+.legal-box .legal-highlight { background:var(--accent-light); border:1px solid rgba(22,163,74,0.2); border-radius:8px; padding:12px 14px; margin-top:20px; font-size:13px; color:var(--accent); font-weight:600; }
 
 @media(min-width:640px){
   .hero-cta { flex-direction:row; justify-content:center; }
@@ -349,10 +363,11 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <div class="footer-links">
       <button class="footer-link" onclick="window._show && window._show('tool')">Try Free</button>
       <button class="footer-link" onclick="window._show && window._show('pricing')">Pricing</button>
-      <button class="footer-link">Privacy Policy</button>
-      <button class="footer-link">Terms</button>
+      <button class="footer-link" onclick="openLegal('privacy')">Privacy Policy</button>
+      <button class="footer-link" onclick="openLegal('terms')">Terms of Service</button>
+      <a class="footer-link" href="https://api.billscan.in/api/support" target="_blank" style="text-decoration:none">Contact Support</a>
     </div>
-    <div class="footer-copy">© 2026 BillScan AI · Made in India · Zero data retention</div>
+    <div class="footer-copy">© 2026 BillScan AI · Made in India · Zero data retention · <a href="mailto:hello@billscan.in" style="color:inherit">hello@billscan.in</a></div>
   </footer>
 </div>
 
@@ -477,11 +492,135 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <div class="footer-links">
       <button class="footer-link" onclick="window._show && window._show('home')">Home</button>
       <button class="footer-link" onclick="window._show && window._show('tool')">Try Free</button>
-      <button class="footer-link">Privacy Policy</button>
-      <button class="footer-link">Terms</button>
+      <button class="footer-link" onclick="openLegal('privacy')">Privacy Policy</button>
+      <button class="footer-link" onclick="openLegal('terms')">Terms of Service</button>
+      <a class="footer-link" href="https://api.billscan.in/api/support" target="_blank" style="text-decoration:none">Contact Support</a>
     </div>
-    <div class="footer-copy">© 2026 BillScan AI · Made in India</div>
+    <div class="footer-copy">© 2026 BillScan AI · Made in India · <a href="mailto:hello@billscan.in" style="color:inherit">hello@billscan.in</a></div>
   </footer>
+</div>
+
+<!-- PRIVACY POLICY MODAL -->
+<div class="legal-overlay" id="legal-privacy" onclick="if(event.target===this)closeLegal('privacy')">
+  <div class="legal-box">
+    <button class="legal-close" onclick="closeLegal('privacy')">✕</button>
+    <h1>Privacy Policy</h1>
+    <span class="legal-updated">Last updated: May 31, 2026</span>
+
+    <h2>1. Who We Are</h2>
+    <p>BillScan AI is a GST invoice extraction service built for Indian CA firms and businesses, operated by Vivian Fernandes. Contact: <a href="mailto:hello@billscan.in">hello@billscan.in</a></p>
+
+    <h2>2. What We Collect</h2>
+    <ul>
+      <li><strong>Google account data</strong> — your name, email address, and profile picture, collected when you sign in via Google OAuth. Used solely to identify your account.</li>
+      <li><strong>IP address</strong> — logged transiently to enforce the free-tier quota (2 extractions per IP). Not linked to personal identity and not shared.</li>
+      <li><strong>Subscription and usage data</strong> — your plan type (free/starter/pro) and monthly extraction count, stored securely in our database.</li>
+      <li><strong>Payment data</strong> — handled entirely by Razorpay. We never receive, see, or store your card or bank details.</li>
+    </ul>
+
+    <h2>3. What We Do NOT Collect</h2>
+    <ul>
+      <li>Your invoice files — every document is processed in RAM and immediately discarded. Nothing is written to disk or logged.</li>
+      <li>The content of your invoices (vendor names, amounts, GSTINs) — never stored, never transmitted beyond the AI extraction step.</li>
+      <li>Your invoices are never used to train any AI model.</li>
+    </ul>
+
+    <h2>4. How We Use Your Data</h2>
+    <ul>
+      <li>To authenticate you and keep you signed in (30-day session token stored in your browser)</li>
+      <li>To track extraction quotas and enforce plan limits</li>
+      <li>To manage your subscription and process refund requests</li>
+      <li>To send transactional emails (subscription confirmation, renewal) via Razorpay</li>
+    </ul>
+
+    <h2>5. Third-Party Services</h2>
+    <ul>
+      <li><strong>Google OAuth</strong> — sign-in authentication</li>
+      <li><strong>Razorpay</strong> — payment processing (subject to Razorpay's privacy policy)</li>
+      <li><strong>Google Gemini / Anthropic Claude</strong> — AI extraction (data is not retained or used for training per their enterprise policies)</li>
+      <li><strong>Supabase</strong> — database hosting (data stored in EU region)</li>
+      <li><strong>Railway</strong> — backend hosting (data transits through Railway servers in-memory only)</li>
+    </ul>
+
+    <h2>6. Data Retention</h2>
+    <ul>
+      <li>Account data (Google ID, email, plan): retained while your account is active</li>
+      <li>Anonymous IP usage data: automatically purged after 30 days</li>
+      <li>Invoice content: zero retention — never persisted</li>
+    </ul>
+
+    <h2>7. Your Rights (DPDP Act 2023)</h2>
+    <p>Under India's Digital Personal Data Protection Act 2023, you have the right to access, correct, or request deletion of your personal data. To exercise these rights, email <a href="mailto:hello@billscan.in">hello@billscan.in</a>. We will respond within 72 hours.</p>
+
+    <h2>8. Cookies</h2>
+    <p>We use one session cookie during Google sign-in (cleared after authentication completes). We do not use advertising or tracking cookies.</p>
+
+    <h2>9. Contact</h2>
+    <p>For privacy queries: <a href="mailto:hello@billscan.in">hello@billscan.in</a></p>
+
+    <div class="legal-highlight">🔒 Your invoice data is never stored. Zero retention is a core product guarantee, not just a policy.</div>
+  </div>
+</div>
+
+<!-- TERMS OF SERVICE MODAL -->
+<div class="legal-overlay" id="legal-terms" onclick="if(event.target===this)closeLegal('terms')">
+  <div class="legal-box">
+    <button class="legal-close" onclick="closeLegal('terms')">✕</button>
+    <h1>Terms of Service</h1>
+    <span class="legal-updated">Last updated: May 31, 2026</span>
+
+    <h2>1. Acceptance</h2>
+    <p>By accessing or using BillScan AI ("the Service"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>
+
+    <h2>2. Service Description</h2>
+    <p>BillScan AI uses artificial intelligence to extract structured data from GST invoices (PDF, JPG, PNG, WebP). The Service is provided for informational and productivity purposes. <strong>Always verify extracted data before using it for accounting, tax filing, or compliance purposes.</strong> We do not guarantee 100% extraction accuracy.</p>
+
+    <h2>3. Eligibility</h2>
+    <p>You must be at least 18 years of age and acting in a professional or business capacity to create a paid account. The free tier is available to all users.</p>
+
+    <h2>4. Free Tier</h2>
+    <p>The free tier allows 2 invoice extractions per IP address, one-time only. Circumventing this limit through VPNs, proxies, or multiple IPs is a violation of these Terms and may result in access termination.</p>
+
+    <h2>5. Paid Plans</h2>
+    <ul>
+      <li><strong>Starter — ₹999/month:</strong> 500 invoice extractions per calendar month</li>
+      <li><strong>Pro — ₹2,999/month:</strong> 2,000 invoice extractions per calendar month</li>
+      <li>Unused extractions do not roll over to the next month</li>
+      <li>Subscriptions renew automatically. You may cancel at any time from your account dashboard</li>
+      <li>Prices are inclusive of applicable taxes</li>
+    </ul>
+
+    <h2>6. Refund Policy</h2>
+    <p>First-time subscribers may request a full refund within 7 days of their initial payment by emailing <a href="mailto:hello@billscan.in">hello@billscan.in</a> with your registered email and order details. Refunds are processed within 5–7 business days. Subsequent renewals are non-refundable.</p>
+
+    <h2>7. Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Process invoices or documents you do not have lawful rights to access</li>
+      <li>Attempt to reverse-engineer, scrape, or replicate our AI extraction pipeline</li>
+      <li>Resell, sublicense, or white-label the Service without prior written permission</li>
+      <li>Upload malicious files or attempt to compromise our infrastructure</li>
+      <li>Use automated tools to circumvent quota limits</li>
+    </ul>
+
+    <h2>8. Intellectual Property</h2>
+    <p>All software, UI design, branding, and extraction logic are the intellectual property of BillScan AI. The structured data extracted from your invoices belongs to you.</p>
+
+    <h2>9. Availability</h2>
+    <p>We aim for high availability but do not guarantee uninterrupted service. We are not liable for downtime caused by our AI providers (Google, Anthropic), hosting platforms, or third-party services.</p>
+
+    <h2>10. Limitation of Liability</h2>
+    <p>BillScan AI is not liable for errors in extracted data or any losses arising from reliance on extracted values. Our maximum aggregate liability to you for any claim is limited to the total fees you paid in the 30 days preceding the claim.</p>
+
+    <h2>11. Modifications</h2>
+    <p>We may update these Terms at any time. Continued use of the Service after changes constitutes acceptance. Material changes will be communicated via email to registered users.</p>
+
+    <h2>12. Governing Law</h2>
+    <p>These Terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the competent courts in India.</p>
+
+    <h2>13. Contact</h2>
+    <p>For any questions about these Terms: <a href="mailto:hello@billscan.in">hello@billscan.in</a></p>
+  </div>
 </div>
 
 <a class="wa-float" href="https://api.billscan.in/api/support" target="_blank">💬</a>
@@ -805,6 +944,16 @@ function showErr(m){const b=document.getElementById('errBox');b.textContent='⚠
 function hideErr(){document.getElementById('errBox').classList.remove('show');}
 function dlCSV(){if(!extractedData)return;const d=extractedData;const rows=[['BillScan AI Export'],['Date',new Date().toLocaleDateString('en-IN')],[],['VENDOR'],['Name',d.vendor?.name||''],['GSTIN',d.vendor?.gstin||''],[],['INVOICE'],['Number',d.invoice?.number||''],['Date',d.invoice?.date||''],[],['TAX'],['Subtotal',d.taxes?.subtotal||''],['CGST',d.taxes?.cgst||''],['SGST',d.taxes?.sgst||''],['IGST',d.taxes?.igst||''],['Grand Total',d.taxes?.grand_total||'']];const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`invoice_${d.invoice?.number||'extracted'}.csv`;a.click();}
 function cpJSON(){if(!extractedData)return;navigator.clipboard.writeText(JSON.stringify(extractedData,null,2));const b=document.querySelectorAll('.action-btn.outline')[0];b.textContent='✓ Copied!';setTimeout(()=>b.textContent='📋 JSON',2000);}
+function openLegal(type) {
+  document.getElementById('legal-' + type).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLegal(type) {
+  document.getElementById('legal-' + type).classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') { ['privacy','terms'].forEach(t => { const el = document.getElementById('legal-'+t); if(el && el.classList.contains('show')) closeLegal(t); }); } });
+
 function openWA(plan){
   window.location.href = BACKEND + '/api/support?plan=' + encodeURIComponent(plan);
 }
