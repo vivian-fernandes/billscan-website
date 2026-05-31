@@ -645,7 +645,11 @@ async function checkAndApplyQuota() {
     updateQuotaBar(data);
     if (data.remaining === 0) {
       document.getElementById('extractorUI').style.display = 'none';
+      document.getElementById('attemptsBar').style.display = 'none';
       document.getElementById('paywall').classList.add('show');
+    } else {
+      document.getElementById('extractorUI').style.display = 'block';
+      document.getElementById('attemptsBar').style.display = data.plan === 'free' ? 'flex' : 'flex';
     }
   } catch(e) {}
 }
@@ -658,8 +662,8 @@ function updateQuotaBar(quota) {
   if (quota.plan === 'free') {
     bar.style.display = 'flex';
     const rem = quota.remaining ?? 0;
-    lbl.textContent = rem > 0 ? `${rem} free extraction${rem===1?'':'s'} remaining` : 'No free extractions left — upgrade to continue';
-    if (sub) sub.textContent = 'Upgrade for unlimited access';
+    lbl.textContent = rem > 0 ? `${rem} free extraction${rem===1?'':'s'} remaining` : 'Free trial exhausted — upgrade to continue';
+    if (sub) sub.textContent = isAuthed ? 'Subscribe to get unlimited access' : 'Sign in after to get unlimited access';
     document.getElementById('dot1').classList.toggle('used', rem < 2);
     document.getElementById('dot2').classList.toggle('used', rem < 1);
   } else if (quota.plan === 'starter' || quota.plan === 'pro') {
