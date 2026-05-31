@@ -608,7 +608,13 @@ window.addEventListener('load', () => {
 });
 
 function show(p) {
-  window._show = show; document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); window.scrollTo(0,0); if(typeof gtag !== 'undefined') gtag('event', 'page_view', {page_title: p, page_location: window.location.href + '#' + p}); }
+  window._show = show;
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  window.scrollTo(0,0);
+  if(typeof gtag !== 'undefined') gtag('event', 'page_view', {page_title: p, page_location: window.location.href + '#' + p});
+  if(p === 'tool' && !isAuthed) checkAnonQuotaOnLoad();
+}
 
 function updateUI(remaining) {
   if (remaining === undefined) remaining = remainingExtractions;
@@ -659,6 +665,21 @@ function showAuthWall() {
   document.getElementById('attemptsBar').style.display = 'none';
   document.getElementById('extractorUI').style.display = 'none';
   document.getElementById('authWall').classList.add('show');
+}
+
+async function checkAnonQuotaOnLoad() {
+  try {
+    const res = await fetch(`${BACKEND}/api/extract/quota`);
+    const data = await res.json();
+    if (data.remaining === 0) {
+      showAuthWall();
+    } else {
+      remainingExtractions = data.remaining;
+      updateUI(data.remaining);
+      document.getElementById('extractorUI').style.display = 'block';
+      document.getElementById('attemptsBar').style.display = 'flex';
+    }
+  } catch(e) {}
 }
 
 function fakeAuth() {
