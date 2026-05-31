@@ -490,6 +490,19 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <p style="color:var(--muted);font-size:14px;line-height:1.6">No hidden fees. No per-invoice charges. Cancel anytime.</p>
     <div class="pricing-grid">
       <div class="price-card">
+        <div class="price-name">Basic</div>
+        <div class="price-amount">₹499 <span>/ mo</span></div>
+        <div class="price-desc">For solo CAs just getting started with digital invoicing.</div>
+        <ul class="price-features">
+          <li>150 invoices/month</li>
+          <li>PDF, JPG, PNG support</li>
+          <li>Tally-ready CSV</li>
+          <li>Email support</li>
+        </ul>
+        <button class="price-cta ghost" onclick="startPayment('basic')">Get Started →</button>
+      </div>
+      <div class="price-card featured">
+        <div class="price-popular">MOST POPULAR</div>
         <div class="price-name">Starter</div>
         <div class="price-amount">₹999 <span>/ mo</span></div>
         <div class="price-desc">For small CA practices with 1–2 staff.</div>
@@ -498,12 +511,10 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
           <li>PDF, JPG, PNG support</li>
           <li>Tally-ready CSV</li>
           <li>Email support</li>
-          <li class="no">Priority support</li>
         </ul>
-        <button class="price-cta ghost" onclick="startPayment('starter')">Get Started →</button>
+        <button class="price-cta main" onclick="startPayment('starter')">Get Started →</button>
       </div>
-      <div class="price-card featured">
-        <div class="price-popular">MOST POPULAR</div>
+      <div class="price-card">
         <div class="price-name">Professional</div>
         <div class="price-amount">₹2,999 <span>/ mo</span></div>
         <div class="price-desc">For established CA firms managing multiple clients.</div>
@@ -513,7 +524,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
           <li>Tally + JSON export</li>
           <li>Priority email support</li>
         </ul>
-        <button class="price-cta main" onclick="startPayment('pro')">Get Started →</button>
+        <button class="price-cta ghost" onclick="startPayment('pro')">Get Started →</button>
       </div>
     </div>
     <div style="margin-top:24px;background:var(--accent-light);border:1px solid rgba(22,163,74,0.2);border-radius:12px;padding:18px 16px">
