@@ -478,7 +478,10 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 
     <div class="attempts-bar" id="attemptsBar">
       <div><div class="attempts-label" id="attemptsLabel">2 free extractions remaining</div><div class="attempts-sub" id="attemptsSubLabel">Free trial — no account needed</div></div>
-      <div class="attempts-dots"><div class="attempt-dot" id="dot1"></div><div class="attempt-dot" id="dot2"></div></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="attempts-dots"><div class="attempt-dot" id="dot1"></div><div class="attempt-dot" id="dot2"></div></div>
+        <button id="managePlanBtn" onclick="showManagePlanPanel()" style="display:none;background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit;white-space:nowrap">Manage Plan</button>
+      </div>
     </div>
 
     <div id="signInBanner" style="display:none;margin-bottom:16px;background:var(--surface);border:2px solid var(--border2);border-radius:16px;padding:24px;text-align:center;">
@@ -508,6 +511,16 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
       <div class="paywall-sub">Plans start at ₹999/month. Process hundreds of invoices with zero manual effort.</div>
       <button class="paywall-btn" onclick="window._show && window._show('pricing')">See Plans →</button>
       <button class="paywall-skip" onclick="window._show && window._show('pricing')">View all pricing</button>
+    </div>
+
+    <!-- Plan management panel — shown for paid users at monthly limit or via "Manage Plan" -->
+    <div class="paywall" id="planLimitPanel">
+      <div class="paywall-icon" id="planLimitIcon">📊</div>
+      <div class="paywall-title" id="planLimitTitle">Monthly Limit Reached</div>
+      <div class="paywall-sub" id="planLimitSub"></div>
+      <div id="planUpgradeOptions"></div>
+      <div id="planDowngradeOptions"></div>
+      <button class="paywall-skip" onclick="hidePlanPanel()" style="margin-top:14px;display:block;margin-left:auto;margin-right:auto">← Back to Extract</button>
     </div>
 
     <div id="extractorUI">
@@ -911,7 +924,8 @@ function handleAuthRedirect() {
 let isAuthed = false;
 let currentFile = null;
 let extractedData = null;
-let remainingExtractions = 2; // optimistic default; updated from backend after each extraction
+let remainingExtractions = 2;
+let currentPlan = null;
 let bulkFiles = [];
 let bulkResults = [];
 let isBulkMode = false;
@@ -984,11 +998,13 @@ async function checkAndApplyQuota() {
   try {
     const res = await fetch(`${BACKEND}/api/extract/quota`, { headers: { 'x-session-token': token } });
     const data = await res.json();
+    currentPlan = data.plan;
     updateQuotaBar(data);
+    const isPaid = ['basic', 'starter', 'pro'].includes(data.plan);
+
     if (data.remaining === 0) {
       const hasResults = document.getElementById('resultsBox').classList.contains('show');
       if (hasResults) {
-        // Extraction just finished — keep results visible, hide upload controls only
         document.getElementById('uploadZone').style.display = 'none';
         document.getElementById('extractBtn').style.display = 'none';
         const secNote = document.querySelector('.security-note');
@@ -996,14 +1012,19 @@ async function checkAndApplyQuota() {
         const resetBtn = document.getElementById('resetBtn');
         if (resetBtn) resetBtn.style.display = 'none';
       } else {
-        // Fresh load with 0 remaining — full paywall, nothing to show
         document.getElementById('extractorUI').style.display = 'none';
         document.getElementById('attemptsBar').style.display = 'none';
       }
-      document.getElementById('paywall').classList.add('show');
+      if (isPaid) {
+        showPlanLimitPanel(data.plan, data.limit, data.monthly_count);
+      } else {
+        document.getElementById('paywall').classList.add('show');
+      }
     } else {
       document.getElementById('extractorUI').style.display = 'block';
-      document.getElementById('attemptsBar').style.display = data.plan === 'free' ? 'flex' : 'flex';
+      document.getElementById('attemptsBar').style.display = 'flex';
+      document.getElementById('paywall').classList.remove('show');
+      document.getElementById('planLimitPanel').classList.remove('show');
     }
   } catch(e) {}
 }
@@ -1026,6 +1047,8 @@ function updateQuotaBar(quota) {
     if (sub) sub.textContent = quota.plan.charAt(0).toUpperCase() + quota.plan.slice(1) + ' Plan';
     document.getElementById('dot1').style.display = 'none';
     document.getElementById('dot2').style.display = 'none';
+    const managePlanBtn = document.getElementById('managePlanBtn');
+    if (managePlanBtn) managePlanBtn.style.display = 'inline-block';
   }
 }
 
@@ -1099,7 +1122,7 @@ async function doExtract(){
     if(!res.ok){
       const code=result.code||'';
       if(code==='ip_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; if(isAuthed){ document.getElementById('paywall').classList.add('show'); } else { showAuthWall(); } return; }
-      if(code==='subscription_required'||code==='monthly_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; document.getElementById('paywall').classList.add('show'); return; }
+      if(code==='subscription_required'||code==='monthly_limit_reached'){ document.getElementById('procBox').classList.remove('show'); document.getElementById('extractBtn').style.display='block'; if(currentPlan&&['basic','starter','pro'].includes(currentPlan)){document.getElementById('extractorUI').style.display='none';showPlanLimitPanel(currentPlan,null,null);}else{document.getElementById('paywall').classList.add('show');} return; }
       throw new Error(result.error||'Server error');
     }
     if(!result.success) throw new Error(result.error||'Extraction failed');
@@ -1281,7 +1304,7 @@ async function doBulkExtract(){
           stopped=true;
           renderBulkQueue();
           showErr('Quota reached after '+done+' of '+bulkFiles.length+' files. Upgrade for more.');
-          if(!isAuthed)showAuthWall();else document.getElementById('paywall').classList.add('show');
+          if(!isAuthed){showAuthWall();}else if(currentPlan&&['basic','starter','pro'].includes(currentPlan)){document.getElementById('extractorUI').style.display='none';showPlanLimitPanel(currentPlan,null,null);}else{document.getElementById('paywall').classList.add('show');}
           break;
         }
         throw new Error(result.error||'Server error');
@@ -1459,6 +1482,69 @@ function dlHistoryCSV(idx) {
   a.click();
 }
 
+// ── PLAN MANAGEMENT ──
+
+function showPlanLimitPanel(plan, limit, used) {
+  const panel = document.getElementById('planLimitPanel');
+  const title = document.getElementById('planLimitTitle');
+  const sub   = document.getElementById('planLimitSub');
+  const upgradeOpts   = document.getElementById('planUpgradeOptions');
+  const downgradeOpts = document.getElementById('planDowngradeOptions');
+
+  const names = { basic: 'Basic', starter: 'Starter', pro: 'Pro' };
+  const pName = names[plan] || plan;
+
+  if (limit != null) {
+    title.textContent = `${pName} Plan — Monthly Limit Reached`;
+    sub.textContent = `You've used ${used ?? limit} of ${limit} invoices this month. Resets on the 1st of next month.`;
+  } else {
+    title.textContent = `Manage ${pName} Plan`;
+    sub.textContent = `You're on the ${pName} plan.`;
+  }
+
+  upgradeOpts.innerHTML = '';
+  downgradeOpts.innerHTML = '';
+
+  if (plan === 'basic') {
+    upgradeOpts.innerHTML =
+      `<button class="paywall-btn" style="margin-bottom:8px" onclick="startPayment('starter')">Upgrade to Starter — 500 invoices/mo · ₹2,999</button>` +
+      `<button class="paywall-btn" onclick="startPayment('pro')">Upgrade to Pro — 2,000 invoices/mo · ₹6,999</button>`;
+  } else if (plan === 'starter') {
+    upgradeOpts.innerHTML =
+      `<button class="paywall-btn" onclick="startPayment('pro')">Upgrade to Pro — 2,000 invoices/mo · ₹6,999</button>`;
+    downgradeOpts.innerHTML =
+      `<button class="paywall-skip" onclick="confirmSwitchPlan('basic')" style="margin-top:10px;display:block">Switch to Basic (150 invoices/mo · ₹999)</button>`;
+  } else if (plan === 'pro') {
+    downgradeOpts.innerHTML =
+      `<div style="font-size:13px;color:var(--muted);margin-bottom:12px">You're on our highest plan. Your quota resets automatically next month.</div>` +
+      `<button class="paywall-skip" onclick="confirmSwitchPlan('starter')" style="display:block;margin:0 auto 8px">Switch to Starter (500 invoices/mo · ₹2,999)</button>` +
+      `<button class="paywall-skip" onclick="confirmSwitchPlan('basic')" style="display:block;margin:0 auto">Switch to Basic (150 invoices/mo · ₹999)</button>`;
+  }
+
+  panel.classList.add('show');
+}
+
+function hidePlanPanel() {
+  document.getElementById('planLimitPanel').classList.remove('show');
+  document.getElementById('extractorUI').style.display = 'block';
+  document.getElementById('attemptsBar').style.display = 'flex';
+}
+
+function showManagePlanPanel() {
+  if (!currentPlan || !['basic','starter','pro'].includes(currentPlan)) return;
+  document.getElementById('extractorUI').style.display = 'none';
+  showPlanLimitPanel(currentPlan, null, null);
+}
+
+function confirmSwitchPlan(newPlan) {
+  const details = {
+    basic:   'Basic — 150 invoices/month · ₹999/mo',
+    starter: 'Starter — 500 invoices/month · ₹2,999/mo'
+  };
+  const msg = `Switch to ${details[newPlan] || newPlan}?\n\nThis starts a new subscription. To avoid double billing, cancel your current subscription from your Razorpay account or contact support@billscan.in.`;
+  if (confirm(msg)) startPayment(newPlan);
+}
+
 async function startPayment(plan) {
   const token = getSessionToken();
   if (!token) {
@@ -1480,7 +1566,7 @@ async function startPayment(plan) {
       key: data.key_id,
       subscription_id: data.subscription_id,
       name: 'BillScan AI',
-      description: plan === 'basic' ? 'Basic Plan — ₹999/month' : plan === 'starter' ? 'Starter Plan — ₹2,999/month' : 'Professional Plan — ₹6,999/month',
+      description: ({basic:'Basic Plan — ₹999/month', starter:'Starter Plan — ₹2,999/month', pro:'Pro Plan — ₹6,999/month'}[plan] || 'BillScan Plan'),
       prefill: { email: user.email, name: user.name },
       theme: { color: '#16a34a' },
       handler: function(response) {
