@@ -815,9 +815,9 @@ function updateNavUser(user) {
     if (navHistory) navHistory.style.display = isPaidUser ? 'block' : 'none';
     if (mobileNavHistory) mobileNavHistory.style.display = isPaidUser ? 'block' : 'none';
     if (dropdownHistory) dropdownHistory.style.display = isPaidUser ? 'block' : 'none';
-    // Show tester plan card only for the test account
+    // Show tester plan card only for the test account (flag set by backend /api/auth/verify)
     const testerCard = document.getElementById('testerPlanCard');
-    if (testerCard) testerCard.style.display = (user.email === 'vivianfernandes55555@gmail.com') ? 'block' : 'none';
+    if (testerCard) testerCard.style.display = user.is_tester ? 'block' : 'none';
   } else {
     signInBtn.style.display = 'block';
     profileEl.style.display = 'none';
@@ -892,7 +892,7 @@ function handleAuthRedirect() {
           document.getElementById('authWall').classList.remove('show');
           document.getElementById('attemptsBar').style.display = 'none';
           if(typeof gtag !== 'undefined') gtag('event', 'sign_in', {method: 'google'});
-          verifySession().then(user => updateNavUser(user));
+          verifySession().then(async user => { updateNavUser(user); await checkAndApplyQuota(); });
         } else {
           showErr('Sign in failed. Please try again.');
           show('tool');
@@ -922,6 +922,13 @@ window.addEventListener('load', () => {
   updateActiveNav('home');
 
   // Handle OAuth redirect first
+  // M5 — if an exchange is in flight, handleAuthRedirect() owns the session setup;
+  // running verifySession() concurrently would race and may clear the session before the JWT arrives
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('auth') === 'success') {
+    handleAuthRedirect();
+    return; // exchange callback will call updateNavUser / checkAndApplyQuota
+  }
   handleAuthRedirect();
 
   // Verify existing session
@@ -1013,7 +1020,7 @@ function updateQuotaBar(quota) {
     if (sub) sub.textContent = isAuthed ? 'Subscribe to continue' : 'Free trial — no account needed';
     document.getElementById('dot1').classList.toggle('used', rem < 2);
     document.getElementById('dot2').classList.toggle('used', rem < 1);
-  } else if (quota.plan === 'starter' || quota.plan === 'pro') {
+  } else if (['basic', 'starter', 'pro'].includes(quota.plan)) {
     bar.style.display = 'flex';
     lbl.textContent = `${quota.monthly_count ?? 0} / ${quota.limit} invoices used this month`;
     if (sub) sub.textContent = quota.plan.charAt(0).toUpperCase() + quota.plan.slice(1) + ' Plan';
@@ -1059,10 +1066,6 @@ function fakeAuth() {
   window.location.href = AUTH_BASE + '/google';
 }
 
-function signInWithEmail() {
-  alert('Email sign in coming soon! Please use Google Sign In for now.');
-}
-
 function onFile(e){const f=e.target.files;if(f.length>1)setBulkFiles(Array.from(f));else if(f.length===1){isBulkMode=false;setFile(f[0]);}}
 function onDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('drag');const f=e.dataTransfer.files;if(f.length>1)setBulkFiles(Array.from(f));else if(f.length===1){isBulkMode=false;setFile(f[0]);}}
 function setFile(f){
@@ -1074,6 +1077,7 @@ function setFile(f){
     document.getElementById('filePill').classList.add('show');
     document.getElementById('extractBtn').disabled=false;
   };
+  reader.onerror=function(){ showErr('Could not read file. Please try again.'); };
   reader.readAsArrayBuffer(f);
 }
 function clearFile(){currentFile=null;document.getElementById('fileIn').value='';document.getElementById('filePill').classList.remove('show');document.getElementById('extractBtn').disabled=true;}
@@ -1134,7 +1138,7 @@ function renderResults(d){
 }
 function escHtml(s){const d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
 function row(k,v,cls=''){const val=v?`<div class="data-val ${cls}">${escHtml(v)}</div>`:`<div class="data-val empty">Not found</div>`;return `<div class="data-row"><div class="data-key">${escHtml(k)}</div>${val}</div>`;}
-function fmt(n){return Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmt(n){const v=parseFloat(String(n).replace(/[^0-9.]/g,''));return isNaN(v)?'0.00':v.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function shareWA(){
   if(!extractedData) return;
   const d = extractedData;
@@ -1180,6 +1184,7 @@ function resetTool(){
   bulkFiles=[]; bulkResults=[]; isBulkMode=false;
   clearFile();
   document.getElementById('resultsBox').classList.remove('show');
+  document.getElementById('paywall').classList.remove('show');
   document.getElementById('bulkResultsBox').style.display='none';
   document.getElementById('bulkResultsList').innerHTML='';
   document.getElementById('bulkQueue').style.display='none';
