@@ -892,8 +892,16 @@ document.addEventListener('click', (e) => {
 function signOut() {
   clearSession();
   isAuthed = false;
+  currentPlan = null;
   updateNavUser(null);
-  updateUI();
+  // Reset tool page — hide extractor, clear any paid-user panels
+  document.getElementById('extractorUI').style.display = 'none';
+  document.getElementById('attemptsBar').style.display = 'flex';
+  document.getElementById('paywall').classList.remove('show');
+  document.getElementById('planLimitPanel').classList.remove('show');
+  document.getElementById('authWall').classList.remove('show');
+  // Re-check anonymous quota: if exhausted → sign-in wall; if remaining → show extractor
+  checkAnonQuotaOnLoad();
 }
 
 // ── HANDLE OAUTH REDIRECT ──
