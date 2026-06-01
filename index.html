@@ -297,12 +297,11 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 
 /* ── MOBILE BOTTOM TAB BAR ── */
 .mob-tab-bar { display:none; position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); box-shadow:0 -2px 12px rgba(0,0,0,0.08); z-index:100; align-items:stretch; padding-bottom:env(safe-area-inset-bottom); }
-.mob-tab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:none; border:none; cursor:pointer; color:var(--muted); font-family:'Outfit',sans-serif; padding:8px 4px 6px; transition:color 0.15s; -webkit-tap-highlight-color:transparent; position:relative; }
-.mob-tab.active { color:var(--accent); }
+.mob-tab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:none; border:none; border-top:3px solid transparent; cursor:pointer; color:var(--muted); font-family:'Outfit',sans-serif; padding:9px 4px 6px; transition:color 0.15s,border-color 0.15s; -webkit-tap-highlight-color:transparent; position:relative; }
+.mob-tab.active { color:var(--accent); border-top-color:var(--accent); }
 .mob-tab-icon { font-size:20px; line-height:1; display:block; }
 .mob-tab-label { font-size:10px; font-weight:600; white-space:nowrap; }
 .mob-tab-extract .mob-tab-icon { background:var(--accent); color:#fff; border-radius:14px; padding:5px 16px; font-size:17px; }
-.mob-tab-extract { color:var(--accent); }
 /* Account panel — slides up from bottom */
 .mob-account-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:101; }
 .mob-account-overlay.open { display:block; }
