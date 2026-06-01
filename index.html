@@ -30,6 +30,26 @@
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
   --shadow: 0 2px 12px rgba(0,0,0,0.08);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1917;
+    --surface2: #252320;
+    --border: #2e2b28;
+    --border2: #3d3a36;
+    --text: #f0ede8;
+    --muted: #a09890;
+    --accent-light: #052e16;
+    --accent2-light: #1e3a5f;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow: 0 2px 12px rgba(0,0,0,0.5);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+    --error-bg: #2c1010;
+    --error-border: #7f1d1d;
+  }
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html { scroll-behavior:smooth; }
@@ -129,7 +149,7 @@ nav {
 .divider-line { flex:1; height:1px; background:var(--border); }
 .divider-text { font-size:12px; color:var(--muted); }
 .email-input { width:100%; padding:12px 14px; border:1px solid var(--border2); border-radius:8px; font-size:14px; font-family:'Outfit',sans-serif; outline:none; margin-bottom:8px; background:var(--bg); transition:border 0.15s; }
-.email-input:focus { border-color:var(--accent); background:#fff; }
+.email-input:focus { border-color:var(--accent); background:var(--surface2); }
 .email-btn { width:100%; padding:12px; border-radius:8px; background:var(--accent); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; }
 
 .upload-zone { border:2px dashed var(--border2); border-radius:12px; padding:32px 20px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:12px; background:var(--surface); }
@@ -161,7 +181,7 @@ nav {
 .results-title { font-size:16px; font-weight:800; }
 .results-badge { background:var(--accent-light); color:var(--accent); border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; }
 
-.total-card { background:var(--text); border-radius:12px; padding:18px 20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; color:#fff; }
+.total-card { background:#1c1917; border-radius:12px; padding:18px 20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; color:#fff; }
 .total-label { font-size:12px; opacity:0.6; margin-bottom:4px; }
 .total-amount { font-size:28px; font-weight:800; font-family:'DM Mono',monospace; color:#86efac; }
 
@@ -189,14 +209,14 @@ nav {
 .paywall-btn { width:100%; padding:14px; background:var(--accent); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; margin-bottom:8px; }
 .paywall-skip { background:none; border:none; color:var(--muted); font-size:13px; cursor:pointer; font-family:'Outfit',sans-serif; }
 
-.error-box { display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px 14px; color:var(--danger); font-size:13px; margin-bottom:12px; line-height:1.5; }
+.error-box { display:none; background:var(--error-bg); border:1px solid var(--error-border); border-radius:8px; padding:12px 14px; color:var(--danger); font-size:13px; margin-bottom:12px; line-height:1.5; }
 .error-box.show { display:block; }
 
 /* PRICING */
 .pricing-wrap { max-width:640px; margin:0 auto; padding:40px 24px 80px; }
 .pricing-grid { display:flex; flex-direction:column; gap:14px; margin-top:28px; }
 .price-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px 20px; position:relative; box-shadow:var(--shadow-sm); }
-.price-card.featured { border-color:var(--accent); border-width:2px; background:#fff; }
+.price-card.featured { border-color:var(--accent); border-width:2px; background:var(--surface); }
 
 /* ── BULK UPLOAD ── */
 .bulk-queue { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
@@ -205,7 +225,7 @@ nav {
 .bulk-item-name { flex:1; font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .bulk-item-status { font-size:13px; flex-shrink:0; width:20px; text-align:center; }
 .bulk-item.done { border-color:rgba(22,163,74,0.3); background:var(--accent-light); }
-.bulk-item.error { border-color:rgba(220,38,38,0.3); background:#fef2f2; }
+.bulk-item.error { border-color:rgba(220,38,38,0.3); background:var(--error-bg); }
 .bulk-item.processing { border-color:var(--accent2); background:var(--accent2-light); }
 .bulk-progress { background:var(--surface2); border-radius:8px; height:6px; margin-bottom:12px; overflow:hidden; }
 .bulk-progress-bar { height:100%; background:var(--accent); border-radius:8px; transition:width 0.3s; }
@@ -214,7 +234,7 @@ nav {
 .bulk-result-hdr:hover { background:var(--surface2); }
 .bulk-result-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; flex-shrink:0; }
 .bulk-result-badge.ok { background:var(--accent-light); color:var(--accent); }
-.bulk-result-badge.err { background:#fef2f2; color:var(--danger); }
+.bulk-result-badge.err { background:var(--error-bg); color:var(--danger); }
 .bulk-result-summary { font-size:12px; color:var(--muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .bulk-result-body { display:none; padding:0 14px 14px; border-top:1px solid var(--border); }
 .bulk-result-body.open { display:block; }
@@ -278,7 +298,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 }
 .nav-dropdown-item:hover { background:var(--surface2); }
 .nav-dropdown-item.danger { color:var(--danger); }
-.nav-dropdown-item.danger:hover { background:#fef2f2; }
+.nav-dropdown-item.danger:hover { background:var(--error-bg); }
 .nav-dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
 .legal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .legal-overlay.show { opacity:1; pointer-events:auto; }
@@ -604,28 +624,28 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
         <button class="price-cta ghost" onclick="startPayment('pro')">Get Started →</button>
       </div>
 
-      <!-- Test plans — visible only for tester account (vivianfernandes55555@gmail.com) -->
-      <div id="testerPlanCards" style="display:none;grid-column:1/-1">
-        <div style="font-size:11px;font-weight:700;color:#d97706;letter-spacing:0.1em;text-transform:uppercase;margin:16px 0 10px">🧪 Internal Test Plans</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
-          <div class="price-card" style="border-color:#f59e0b;border-width:2px;background:#fffbeb">
-            <div class="price-name" style="color:#d97706">Basic Test</div>
-            <div class="price-amount">₹1 <span>/ mo</span></div>
-            <div class="price-desc">Tests Basic quota (150/mo).</div>
-            <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706;margin-top:auto" onclick="startPayment('basic_test')">Subscribe ₹1 →</button>
-          </div>
-          <div class="price-card" style="border-color:#f59e0b;border-width:2px;background:#fffbeb">
-            <div class="price-name" style="color:#d97706">Starter Test</div>
-            <div class="price-amount">₹2 <span>/ mo</span></div>
-            <div class="price-desc">Tests Starter quota (500/mo).</div>
-            <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706;margin-top:auto" onclick="startPayment('starter_test')">Subscribe ₹2 →</button>
-          </div>
-          <div class="price-card" style="border-color:#f59e0b;border-width:2px;background:#fffbeb">
-            <div class="price-name" style="color:#d97706">Pro Test</div>
-            <div class="price-amount">₹3 <span>/ mo</span></div>
-            <div class="price-desc">Tests Pro quota (2000/mo).</div>
-            <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706;margin-top:auto" onclick="startPayment('pro_test')">Subscribe ₹3 →</button>
-          </div>
+    </div>
+    <!-- Test plans — visible only for tester account (vivianfernandes55555@gmail.com) -->
+    <div id="testerPlanCards" style="display:none;margin-top:20px">
+      <div style="font-size:11px;font-weight:700;color:#d97706;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">🧪 Internal Test Plans</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+        <div class="price-card" style="border-color:#f59e0b;border-width:2px">
+          <div class="price-name" style="color:#d97706">Basic Test</div>
+          <div class="price-amount">₹1 <span>/ mo</span></div>
+          <div class="price-desc">Tests Basic quota (150/mo).</div>
+          <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706" onclick="startPayment('basic_test')">Subscribe ₹1 →</button>
+        </div>
+        <div class="price-card" style="border-color:#f59e0b;border-width:2px">
+          <div class="price-name" style="color:#d97706">Starter Test</div>
+          <div class="price-amount">₹2 <span>/ mo</span></div>
+          <div class="price-desc">Tests Starter quota (500/mo).</div>
+          <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706" onclick="startPayment('starter_test')">Subscribe ₹2 →</button>
+        </div>
+        <div class="price-card" style="border-color:#f59e0b;border-width:2px">
+          <div class="price-name" style="color:#d97706">Pro Test</div>
+          <div class="price-amount">₹3 <span>/ mo</span></div>
+          <div class="price-desc">Tests Pro quota (2000/mo).</div>
+          <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706" onclick="startPayment('pro_test')">Subscribe ₹3 →</button>
         </div>
       </div>
     </div>
@@ -840,7 +860,7 @@ function updateNavUser(user) {
     }
     // Show tester plan cards only for the test account (flag set by backend /api/auth/verify)
     const testerCards = document.getElementById('testerPlanCards');
-    if (testerCards) testerCards.style.display = user.is_tester ? 'contents' : 'none';
+    if (testerCards) testerCards.style.display = user.is_tester ? 'block' : 'none';
   } else {
     signInBtn.style.display = 'block';
     profileEl.style.display = 'none';
