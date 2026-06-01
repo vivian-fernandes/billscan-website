@@ -1445,6 +1445,7 @@ function hidePlanPanel() {
 
 function showManagePlanPanel() {
   if (!currentPlan || !['basic','starter','pro'].includes(currentPlan)) return;
+  show('tool');
   document.getElementById('extractorUI').style.display = 'none';
   showPlanLimitPanel(currentPlan, null, null);
 }
