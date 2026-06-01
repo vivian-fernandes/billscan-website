@@ -443,10 +443,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 
     <div class="attempts-bar" id="attemptsBar">
       <div><div class="attempts-label" id="attemptsLabel">2 free extractions remaining</div><div class="attempts-sub" id="attemptsSubLabel">Free trial — no account needed</div></div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="attempts-dots"><div class="attempt-dot" id="dot1"></div><div class="attempt-dot" id="dot2"></div></div>
-        <button id="managePlanBtn" onclick="showManagePlanPanel()" style="display:none;background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit;white-space:nowrap">Manage Plan</button>
-      </div>
+      <div class="attempts-dots"><div class="attempt-dot" id="dot1"></div><div class="attempt-dot" id="dot2"></div></div>
     </div>
 
     <div id="signInBanner" style="display:none;margin-bottom:16px;background:var(--surface);border:2px solid var(--border2);border-radius:16px;padding:24px;text-align:center;">
@@ -1018,8 +1015,6 @@ function updateQuotaBar(quota) {
     if (sub) sub.textContent = quota.plan.charAt(0).toUpperCase() + quota.plan.slice(1) + ' Plan';
     document.getElementById('dot1').style.display = 'none';
     document.getElementById('dot2').style.display = 'none';
-    const managePlanBtn = document.getElementById('managePlanBtn');
-    if (managePlanBtn) managePlanBtn.style.display = 'inline-block';
   }
 }
 
