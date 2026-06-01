@@ -336,6 +336,14 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 .mob-account-btn.signin { background:var(--accent); color:#fff; margin-bottom:12px; }
 .mob-account-btn.signout { background:var(--surface2); color:var(--danger); border:1px solid var(--border); }
 
+/* PAYMENT LOADER OVERLAY */
+.payment-loader-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:600; align-items:center; justify-content:center; }
+.payment-loader-overlay.show { display:flex; }
+.payment-loader-box { background:var(--surface); border-radius:16px; padding:32px 36px; text-align:center; box-shadow:var(--shadow-lg); min-width:240px; }
+.payment-loader-spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+.payment-loader-title { font-size:15px; font-weight:700; margin-bottom:6px; }
+.payment-loader-sub { font-size:12px; color:var(--muted); }
+
 @media(max-width:639px) {
   .nav-right { display:none; }
   .nav-hamburger { display:none; }
@@ -1486,6 +1494,17 @@ function showManagePlanPanel() {
   showPlanLimitPanel(currentPlan, null, null);
 }
 
+function showPaymentLoader(msg) {
+  const el = document.getElementById('paymentLoader');
+  const title = document.getElementById('paymentLoaderTitle');
+  if (title) title.textContent = msg || 'Setting up your subscription…';
+  if (el) el.classList.add('show');
+}
+function hidePaymentLoader() {
+  const el = document.getElementById('paymentLoader');
+  if (el) el.classList.remove('show');
+}
+
 async function confirmSwitchPlan(newPlan) {
   const details = {
     basic:        'Basic — 150 invoices/month · ₹999/mo',
@@ -1500,6 +1519,7 @@ async function confirmSwitchPlan(newPlan) {
   const token = getSessionToken();
   if (!token) { alert('Please sign in first.'); return; }
 
+  showPaymentLoader('Switching your plan…');
   try {
     const res = await fetch(BACKEND + '/api/payment/switch', {
       method: 'POST',
@@ -1518,14 +1538,17 @@ async function confirmSwitchPlan(newPlan) {
       prefill: { email: user?.email, name: user?.name },
       theme: { color: '#16a34a' },
       handler: function(response) {
+        hidePaymentLoader();
         alert('🎉 Plan switched successfully!');
         window.location.reload();
-      }
+      },
+      modal: { ondismiss: hidePaymentLoader }
     };
+    hidePaymentLoader();
     const rzp = new Razorpay(options);
-    rzp.on('payment.failed', function(r) { alert('Payment failed: ' + r.error.description); });
+    rzp.on('payment.failed', function(r) { hidePaymentLoader(); alert('Payment failed: ' + r.error.description); });
     rzp.open();
-  } catch(err) { alert('Error: ' + err.message); }
+  } catch(err) { hidePaymentLoader(); alert('Error: ' + err.message); }
 }
 
 async function startPayment(plan) {
@@ -1535,9 +1558,10 @@ async function startPayment(plan) {
     fakeAuth();
     return;
   }
+  showPaymentLoader();
   try {
     const user = await verifySession();
-    if (!user) { alert('Session expired. Please sign in again.'); fakeAuth(); return; }
+    if (!user) { hidePaymentLoader(); alert('Session expired. Please sign in again.'); fakeAuth(); return; }
     const res = await fetch(BACKEND + '/api/payment/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-session-token': token },
@@ -1553,16 +1577,28 @@ async function startPayment(plan) {
       prefill: { email: user.email, name: user.name },
       theme: { color: '#16a34a' },
       handler: function(response) {
+        hidePaymentLoader();
         if(typeof gtag !== 'undefined') gtag('event', 'purchase', { transaction_id: response.razorpay_payment_id, value: ({ basic: 999, starter: 2999, pro: 6999 }[plan] || 0), currency: 'INR' });
         alert('🎉 Payment successful! Your account has been upgraded.');
         window.location.reload();
-      }
+      },
+      modal: { ondismiss: hidePaymentLoader }
     };
+    hidePaymentLoader();
     const rzp = new Razorpay(options);
-    rzp.on('payment.failed', function(r) { alert('Payment failed: ' + r.error.description); });
+    rzp.on('payment.failed', function(r) { hidePaymentLoader(); alert('Payment failed: ' + r.error.description); });
     rzp.open();
-  } catch(err) { alert('Error: ' + err.message); }
+  } catch(err) { hidePaymentLoader(); alert('Error: ' + err.message); }
 }
 </script>
+
+<!-- Payment loading overlay -->
+<div class="payment-loader-overlay" id="paymentLoader">
+  <div class="payment-loader-box">
+    <div class="payment-loader-spinner"></div>
+    <div class="payment-loader-title" id="paymentLoaderTitle">Setting up your subscription…</div>
+    <div class="payment-loader-sub">Please wait, do not close this page.</div>
+  </div>
+</div>
 </body>
 </html>
