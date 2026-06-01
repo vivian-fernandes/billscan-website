@@ -880,15 +880,25 @@ function signOut() {
 function handleAuthRedirect() {
   const params = new URLSearchParams(window.location.search);
   const auth = params.get('auth');
-  const token = params.get('token');
-  if (auth === 'success' && token) {
-    saveSession(token);
-    isAuthed = true;
+  const code = params.get('code');
+  if (auth === 'success' && code) {
     window.history.replaceState({}, '', window.location.pathname);
-    document.getElementById('authWall').classList.remove('show');
-    document.getElementById('attemptsBar').style.display = 'none';
-    if(typeof gtag !== 'undefined') gtag('event', 'sign_in', {method: 'google'});
-    verifySession().then(user => updateNavUser(user));
+    fetch('https://api.billscan.in/api/auth/exchange?code=' + encodeURIComponent(code))
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.token) {
+          saveSession(data.token);
+          isAuthed = true;
+          document.getElementById('authWall').classList.remove('show');
+          document.getElementById('attemptsBar').style.display = 'none';
+          if(typeof gtag !== 'undefined') gtag('event', 'sign_in', {method: 'google'});
+          verifySession().then(user => updateNavUser(user));
+        } else {
+          showErr('Sign in failed. Please try again.');
+          show('tool');
+        }
+      })
+      .catch(() => { showErr('Sign in failed. Please try again.'); show('tool'); });
   } else if (auth === 'error') {
     window.history.replaceState({}, '', window.location.pathname);
     const reason = params.get('reason') || 'unknown error';
@@ -916,8 +926,8 @@ window.addEventListener('load', () => {
 
   // Verify existing session
   verifySession().then(async user => {
+    isAuthed = !!user;
     if (user) {
-      isAuthed = true;
       document.getElementById('attemptsBar').style.display = 'none';
       updateNavUser(user);
       await checkAndApplyQuota();
@@ -1099,6 +1109,7 @@ async function doExtract(){
     document.getElementById('extractBtn').style.display='block';
     // Multi-invoice PDF: reuse bulk results display
     if(result.invoices && result.invoices.length > 1){
+      isBulkMode = false; // single file — reset so next upload doesn't enter bulk flow
       bulkResults = result.invoices.map((inv, i) => ({ name: 'Receipt '+(i+1), success: true, error: null, data: inv }));
       renderBulkResults();
       document.getElementById('bulkResultsBadge').textContent = result.invoices.length + ' receipts found';
@@ -1468,7 +1479,7 @@ async function startPayment(plan) {
       prefill: { email: user.email, name: user.name },
       theme: { color: '#16a34a' },
       handler: function(response) {
-        if(typeof gtag !== 'undefined') gtag('event', 'purchase', { transaction_id: response.razorpay_payment_id, value: plan === 'starter' ? 999 : 2999, currency: 'INR' });
+        if(typeof gtag !== 'undefined') gtag('event', 'purchase', { transaction_id: response.razorpay_payment_id, value: ({ basic: 999, starter: 2999, pro: 6999 }[plan] || 0), currency: 'INR' });
         alert('🎉 Payment successful! Your account has been upgraded.');
         window.location.reload();
       }
