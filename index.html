@@ -295,25 +295,33 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 .legal-box a:hover { text-decoration:underline; }
 .legal-box .legal-highlight { background:var(--accent-light); border:1px solid rgba(22,163,74,0.2); border-radius:8px; padding:12px 14px; margin-top:20px; font-size:13px; color:var(--accent); font-weight:600; }
 
-/* ── HAMBURGER / MOBILE DRAWER ── */
-.nav-hamburger { display:none; background:none; border:none; font-size:22px; cursor:pointer; padding:6px 8px; color:var(--text); line-height:1; border-radius:8px; }
-.nav-hamburger:hover { background:var(--surface2); }
-.nav-mobile-drawer { display:none; position:fixed; top:60px; left:0; right:0; background:var(--surface); border-bottom:1px solid var(--border); box-shadow:var(--shadow-lg); z-index:99; flex-direction:column; }
-.nav-mobile-drawer.open { display:flex; }
-.nav-mobile-item { background:none; border:none; text-align:left; padding:14px 24px; font-size:15px; font-weight:500; font-family:'Outfit',sans-serif; color:var(--text); cursor:pointer; width:100%; transition:background 0.1s; }
-.nav-mobile-item:hover { background:var(--surface2); }
-.nav-mobile-item.cta { color:var(--accent); font-weight:700; }
-.nav-mobile-item.danger { color:var(--danger); }
-.nav-mobile-divider { height:1px; background:var(--border); margin:4px 0; }
-.nav-mobile-user-info { display:flex; align-items:center; gap:12px; padding:14px 24px 6px; }
-.nav-mobile-avatar { width:36px; height:36px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
-.nav-mobile-user-text { display:flex; flex-direction:column; }
-.nav-mobile-user-name { font-size:14px; font-weight:700; color:var(--text); }
-.nav-mobile-user-email { font-size:12px; color:var(--muted); }
+/* ── MOBILE BOTTOM TAB BAR ── */
+.mob-tab-bar { display:none; position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); box-shadow:0 -2px 12px rgba(0,0,0,0.08); z-index:100; align-items:stretch; padding-bottom:env(safe-area-inset-bottom); }
+.mob-tab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:none; border:none; cursor:pointer; color:var(--muted); font-family:'Outfit',sans-serif; padding:8px 4px 6px; transition:color 0.15s; -webkit-tap-highlight-color:transparent; position:relative; }
+.mob-tab.active { color:var(--accent); }
+.mob-tab-icon { font-size:20px; line-height:1; display:block; }
+.mob-tab-label { font-size:10px; font-weight:600; white-space:nowrap; }
+.mob-tab-extract .mob-tab-icon { background:var(--accent); color:#fff; border-radius:14px; padding:5px 16px; font-size:17px; }
+.mob-tab-extract { color:var(--accent); }
+/* Account panel — slides up from bottom */
+.mob-account-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:101; }
+.mob-account-overlay.open { display:block; }
+.mob-account-panel { display:none; position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-radius:20px 20px 0 0; box-shadow:0 -4px 28px rgba(0,0,0,0.14); z-index:102; padding:0 20px calc(20px + env(safe-area-inset-bottom)); }
+.mob-account-panel.open { display:block; }
+.mob-account-handle { width:36px; height:4px; background:var(--border2); border-radius:2px; margin:14px auto 18px; }
+.mob-account-user { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+.mob-account-avatar { width:44px; height:44px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0; }
+.mob-account-name { font-size:15px; font-weight:700; color:var(--text); }
+.mob-account-email { font-size:12px; color:var(--muted); margin-top:2px; }
+.mob-account-btn { width:100%; padding:13px; border-radius:12px; border:none; font-size:14px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; display:block; }
+.mob-account-btn.signin { background:var(--accent); color:#fff; margin-bottom:12px; }
+.mob-account-btn.signout { background:var(--surface2); color:var(--danger); border:1px solid var(--border); }
 
 @media(max-width:639px) {
   .nav-right { display:none; }
-  .nav-hamburger { display:flex; align-items:center; }
+  .nav-hamburger { display:none; }
+  .mob-tab-bar { display:flex; }
+  .page { padding-bottom:70px; }
 }
 
 @media(min-width:640px){
@@ -322,7 +330,9 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   .feature-grid { grid-template-columns:repeat(2,1fr); }
   .pricing-grid { flex-direction:row; align-items:flex-start; }
   .price-card { flex:1; }
-  .nav-mobile-drawer { display:none !important; }
+  .mob-tab-bar { display:none !important; }
+  .mob-account-panel { display:none !important; }
+  .mob-account-overlay { display:none !important; }
 }
 </style>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -331,7 +341,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 
 <nav>
   <div class="logo">Bill<span>Scan</span></div>
-  <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileMenu()" aria-label="Menu">☰</button>
+
   <div class="nav-right">
     <button class="nav-btn ghost" id="navHome" onclick="window._show && window._show('home')">Home</button>
     <button class="nav-btn ghost" id="navPricing" onclick="window._show && window._show('pricing')">Pricing</button>
@@ -358,22 +368,42 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   </div>
 </nav>
 
-<!-- MOBILE NAV DRAWER -->
-<div class="nav-mobile-drawer" id="navMobileDrawer">
-  <button class="nav-mobile-item" onclick="mobileNav('home')">Home</button>
-  <button class="nav-mobile-item" id="mobileNavPricing" onclick="mobileNav('pricing')">Pricing</button>
-  <button class="nav-mobile-item" id="mobileNavTool" onclick="mobileNav('tool')">Try Free</button>
-  <div class="nav-mobile-divider"></div>
-  <button class="nav-mobile-item cta" id="mobileSignIn" onclick="fakeAuth();closeMobileMenu()">Sign In with Google</button>
+<!-- MOBILE BOTTOM TAB BAR -->
+<div class="mob-tab-bar" id="mobTabBar">
+  <button class="mob-tab" id="mobTabHome" onclick="mobileNav('home')">
+    <span class="mob-tab-icon">🏠</span>
+    <span class="mob-tab-label">Home</span>
+  </button>
+  <button class="mob-tab mob-tab-extract" id="mobileNavTool" onclick="mobileNav('tool')">
+    <span class="mob-tab-icon">⚡</span>
+    <span class="mob-tab-label" id="mobileNavToolLabel">Extract</span>
+  </button>
+  <button class="mob-tab" id="mobileNavPricing" onclick="mobileNav('pricing')">
+    <span class="mob-tab-icon" id="mobileNavPricingIcon">💳</span>
+    <span class="mob-tab-label" id="mobileNavPricingLabel">Pricing</span>
+  </button>
+  <button class="mob-tab" id="mobTabAccount" onclick="toggleMobAccount()">
+    <span class="mob-tab-icon" id="mobAccountIcon">👤</span>
+    <span class="mob-tab-label">Account</span>
+  </button>
+</div>
+
+<!-- Account panel overlay -->
+<div class="mob-account-overlay" id="mobAccountOverlay" onclick="closeMobAccount()"></div>
+
+<!-- Account panel -->
+<div class="mob-account-panel" id="mobAccountPanel">
+  <div class="mob-account-handle"></div>
+  <button class="mob-account-btn signin" id="mobileSignIn" onclick="fakeAuth();closeMobAccount()">Sign In with Google</button>
   <div id="mobileUserRow" style="display:none">
-    <div class="nav-mobile-user-info">
-      <div class="nav-mobile-avatar" id="mobileAvatar">?</div>
-      <div class="nav-mobile-user-text">
-        <div class="nav-mobile-user-name" id="mobileUserName"></div>
-        <div class="nav-mobile-user-email" id="mobileUserEmail"></div>
+    <div class="mob-account-user">
+      <div class="mob-account-avatar" id="mobileAvatar">?</div>
+      <div>
+        <div class="mob-account-name" id="mobileUserName"></div>
+        <div class="mob-account-email" id="mobileUserEmail"></div>
       </div>
     </div>
-    <button class="nav-mobile-item danger" onclick="confirmSignOut();closeMobileMenu()">Sign Out</button>
+    <button class="mob-account-btn signout" onclick="confirmSignOut();closeMobAccount()">Sign Out</button>
   </div>
 </div>
 
@@ -385,7 +415,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <p class="hero-sub">Upload any invoice — PDF, photo, WhatsApp screenshot. AI extracts every field instantly. Tally-ready CSV. No manual typing. Ever.</p>
     <div class="hero-cta">
       <button class="btn-lg green" id="heroCta" onclick="window._show && window._show('tool')">Try Free — No Signup</button>
-      <button class="btn-lg neutral" onclick="window._show && window._show('pricing')">See Pricing →</button>
+      <button class="btn-lg neutral" id="heroSeePricing" onclick="window._show && window._show('pricing')">See Pricing →</button>
     </div>
     <div class="hero-stats">
       <div class="hero-stat"><span class="hero-stat-num">3 days</span><div class="hero-stat-lbl">Saved monthly</div></div>
@@ -766,24 +796,33 @@ function updateNavUser(user) {
     if (heroCta) { heroCta.textContent = 'Extract Invoice →'; }
     if (mobileSignIn) mobileSignIn.style.display = 'none';
     if (mobileUserRow) mobileUserRow.style.display = 'block';
-    if (mobileNavTool) mobileNavTool.textContent = 'Extract Invoice';
     if (document.getElementById('mobileAvatar')) document.getElementById('mobileAvatar').textContent = initials;
     if (document.getElementById('mobileUserName')) document.getElementById('mobileUserName').textContent = user.name || 'Account';
     if (document.getElementById('mobileUserEmail')) document.getElementById('mobileUserEmail').textContent = user.email || '';
-    // Paid users: change "Pricing" nav to "Manage Plan"
+    // Account tab: show initials dot when signed in
+    const mobAccountIcon = document.getElementById('mobAccountIcon');
+    if (mobAccountIcon) { mobAccountIcon.textContent = initials; mobAccountIcon.style.cssText = 'width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;line-height:1;'; }
     const navPricing = document.getElementById('navPricing');
     const dropdownPricing = document.getElementById('dropdownPricing');
     const mobileNavPricing = document.getElementById('mobileNavPricing');
+    const mobileNavPricingLabel = document.getElementById('mobileNavPricingLabel');
+    const mobileNavPricingIcon = document.getElementById('mobileNavPricingIcon');
+    const heroSeePricing = document.getElementById('heroSeePricing');
     if (isPaidUser) {
       if (navPricing) { navPricing.textContent = 'Upgrade Plan'; navPricing.onclick = () => showManagePlanPanel(); }
       if (dropdownPricing) { dropdownPricing.textContent = '💳 Upgrade Plan'; dropdownPricing.onclick = () => { showManagePlanPanel(); closeDropdown(); }; }
-      if (mobileNavPricing) { mobileNavPricing.textContent = 'Upgrade Plan'; mobileNavPricing.onclick = () => { closeMobileMenu(); showManagePlanPanel(); }; }
-      // Hide the "2 free extractions" bar immediately for paid users
+      if (mobileNavPricing) { mobileNavPricing.onclick = () => { closeMobAccount(); showManagePlanPanel(); }; }
+      if (mobileNavPricingLabel) mobileNavPricingLabel.textContent = 'Upgrade';
+      if (mobileNavPricingIcon) mobileNavPricingIcon.textContent = '⬆️';
+      if (heroSeePricing) heroSeePricing.style.display = 'none';
       document.getElementById('attemptsBar').style.display = 'none';
     } else {
       if (navPricing) { navPricing.textContent = 'Pricing'; navPricing.onclick = () => window._show && window._show('pricing'); }
       if (dropdownPricing) { dropdownPricing.textContent = '💳 Pricing'; dropdownPricing.onclick = () => { show('pricing'); closeDropdown(); }; }
-      if (mobileNavPricing) { mobileNavPricing.textContent = 'Pricing'; mobileNavPricing.onclick = () => mobileNav('pricing'); }
+      if (mobileNavPricing) { mobileNavPricing.onclick = () => mobileNav('pricing'); }
+      if (mobileNavPricingLabel) mobileNavPricingLabel.textContent = 'Pricing';
+      if (mobileNavPricingIcon) mobileNavPricingIcon.textContent = '💳';
+      if (heroSeePricing) heroSeePricing.style.display = '';
     }
     // Show tester plan card only for the test account (flag set by backend /api/auth/verify)
     const testerCard = document.getElementById('testerPlanCard');
@@ -796,29 +835,39 @@ function updateNavUser(user) {
     if (heroCta) { heroCta.textContent = 'Try Free — No Signup'; }
     if (mobileSignIn) mobileSignIn.style.display = 'block';
     if (mobileUserRow) mobileUserRow.style.display = 'none';
-    if (mobileNavTool) mobileNavTool.textContent = 'Try Free';
+    // Reset account tab icon to generic person
+    const mobAccountIcon = document.getElementById('mobAccountIcon');
+    if (mobAccountIcon) { mobAccountIcon.textContent = '👤'; mobAccountIcon.removeAttribute('style'); }
     // Reset pricing nav to default
     const navPricing = document.getElementById('navPricing');
     const dropdownPricing = document.getElementById('dropdownPricing');
     const mobileNavPricing = document.getElementById('mobileNavPricing');
+    const mobileNavPricingLabel = document.getElementById('mobileNavPricingLabel');
+    const mobileNavPricingIcon = document.getElementById('mobileNavPricingIcon');
+    const heroSeePricing = document.getElementById('heroSeePricing');
     if (navPricing) { navPricing.textContent = 'Pricing'; navPricing.onclick = () => window._show && window._show('pricing'); }
     if (dropdownPricing) { dropdownPricing.textContent = '💳 Pricing'; dropdownPricing.onclick = () => { show('pricing'); closeDropdown(); }; }
-    if (mobileNavPricing) { mobileNavPricing.textContent = 'Pricing'; mobileNavPricing.onclick = () => mobileNav('pricing'); }
+    if (mobileNavPricing) { mobileNavPricing.onclick = () => mobileNav('pricing'); }
+    if (mobileNavPricingLabel) mobileNavPricingLabel.textContent = 'Pricing';
+    if (mobileNavPricingIcon) mobileNavPricingIcon.textContent = '💳';
+    if (heroSeePricing) heroSeePricing.style.display = '';
     const testerCard = document.getElementById('testerPlanCard');
     if (testerCard) testerCard.style.display = 'none';
   }
 }
 
-function toggleMobileMenu() {
-  const drawer = document.getElementById('navMobileDrawer');
-  const isOpen = drawer.classList.toggle('open');
-  document.getElementById('navHamburger').textContent = isOpen ? '✕' : '☰';
+function toggleMobAccount() {
+  const panel = document.getElementById('mobAccountPanel');
+  const overlay = document.getElementById('mobAccountOverlay');
+  const isOpen = panel.classList.toggle('open');
+  overlay.classList.toggle('open', isOpen);
 }
-function closeMobileMenu() {
-  document.getElementById('navMobileDrawer').classList.remove('open');
-  document.getElementById('navHamburger').textContent = '☰';
+function closeMobAccount() {
+  document.getElementById('mobAccountPanel').classList.remove('open');
+  document.getElementById('mobAccountOverlay').classList.remove('open');
 }
-function mobileNav(page) { closeMobileMenu(); show(page); }
+function closeMobileMenu() { closeMobAccount(); }
+function mobileNav(page) { closeMobAccount(); show(page); }
 
 function toggleDropdown() {
   document.getElementById('navDropdown').classList.toggle('open');
@@ -838,9 +887,6 @@ function confirmSignOut() {
 document.addEventListener('click', (e) => {
   const profile = document.getElementById('navProfile');
   if (profile && !profile.contains(e.target)) closeDropdown();
-  const drawer = document.getElementById('navMobileDrawer');
-  const hamburger = document.getElementById('navHamburger');
-  if (drawer && hamburger && !drawer.contains(e.target) && !hamburger.contains(e.target)) closeMobileMenu();
 });
 
 function signOut() {
@@ -945,6 +991,13 @@ function updateActiveNav(p) {
     const el = document.getElementById(id);
     if (!el) return;
     el.className = 'nav-btn ' + (map[p] === id ? 'primary' : 'ghost');
+  });
+  // Mobile bottom tab active state
+  const mobMap = { home: 'mobTabHome', pricing: 'mobileNavPricing', tool: 'mobileNavTool' };
+  ['mobTabHome', 'mobileNavPricing', 'mobileNavTool'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('active', mobMap[p] === id);
   });
 }
 
