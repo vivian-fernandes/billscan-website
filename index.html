@@ -368,6 +368,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   <div class="nav-right">
     <button class="nav-btn ghost" id="navHome" onclick="window._show && window._show('home')">Home</button>
     <button class="nav-btn ghost" id="navPricing" onclick="window._show && window._show('pricing')">Pricing</button>
+
     <button class="nav-btn ghost" id="navHistory" style="display:none" onclick="window._show && window._show('history')">History</button>
     <button class="nav-btn ghost" id="navTryFree" onclick="window._show && window._show('tool')">Try Free</button>
 <button class="nav-btn outline" id="navAuthBtn" onclick="fakeAuth()">Sign In</button>
@@ -384,7 +385,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     </div>
     <button class="nav-dropdown-item" onclick="show('tool');closeDropdown()">🔍 Extract Invoice</button>
     <button class="nav-dropdown-item" id="dropdownHistory" style="display:none" onclick="show('history');closeDropdown()">📋 My Invoices</button>
-    <button class="nav-dropdown-item" onclick="show('pricing');closeDropdown()">💳 Pricing</button>
+    <button class="nav-dropdown-item" id="dropdownPricing" onclick="show('pricing');closeDropdown()">💳 Pricing</button>
     <div class="nav-dropdown-divider"></div>
     <button class="nav-dropdown-item danger" onclick="confirmSignOut()">🚪 Sign Out</button>
   </div>
@@ -395,7 +396,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 <!-- MOBILE NAV DRAWER -->
 <div class="nav-mobile-drawer" id="navMobileDrawer">
   <button class="nav-mobile-item" onclick="mobileNav('home')">Home</button>
-  <button class="nav-mobile-item" onclick="mobileNav('pricing')">Pricing</button>
+  <button class="nav-mobile-item" id="mobileNavPricing" onclick="mobileNav('pricing')">Pricing</button>
   <button class="nav-mobile-item" id="mobileNavHistory" style="display:none" onclick="mobileNav('history')">My Invoices</button>
   <button class="nav-mobile-item" id="mobileNavTool" onclick="mobileNav('tool')">Try Free</button>
   <div class="nav-mobile-divider"></div>
@@ -527,7 +528,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
       <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileIn').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDrop(event)">
         <div class="upload-icon">📄</div>
         <div class="upload-title" id="uploadTitle">Drop your invoice here</div>
-        <div class="upload-sub">PDF · JPG · PNG · WhatsApp photo · <strong>Select multiple files for bulk (1 invoice per file)</strong></div>
+        <div class="upload-sub">PDF · JPG · PNG · WhatsApp photo · <strong>Select multiple files for bulk extraction</strong></div>
         <div class="upload-inner-btn" id="uploadBtn">Choose File</div>
       </div>
       <input type="file" id="fileIn" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none" multiple onchange="onFile(event)">
@@ -828,6 +829,21 @@ function updateNavUser(user) {
     if (navHistory) navHistory.style.display = isPaidUser ? 'block' : 'none';
     if (mobileNavHistory) mobileNavHistory.style.display = isPaidUser ? 'block' : 'none';
     if (dropdownHistory) dropdownHistory.style.display = isPaidUser ? 'block' : 'none';
+    // Paid users: change "Pricing" nav to "Manage Plan"
+    const navPricing = document.getElementById('navPricing');
+    const dropdownPricing = document.getElementById('dropdownPricing');
+    const mobileNavPricing = document.getElementById('mobileNavPricing');
+    if (isPaidUser) {
+      if (navPricing) { navPricing.textContent = 'Upgrade Plan'; navPricing.onclick = () => showManagePlanPanel(); }
+      if (dropdownPricing) { dropdownPricing.textContent = '💳 Upgrade Plan'; dropdownPricing.onclick = () => { showManagePlanPanel(); closeDropdown(); }; }
+      if (mobileNavPricing) { mobileNavPricing.textContent = 'Upgrade Plan'; mobileNavPricing.onclick = () => { closeMobileMenu(); showManagePlanPanel(); }; }
+      // Hide the "2 free extractions" bar immediately for paid users
+      document.getElementById('attemptsBar').style.display = 'none';
+    } else {
+      if (navPricing) { navPricing.textContent = 'Pricing'; navPricing.onclick = () => window._show && window._show('pricing'); }
+      if (dropdownPricing) { dropdownPricing.textContent = '💳 Pricing'; dropdownPricing.onclick = () => { show('pricing'); closeDropdown(); }; }
+      if (mobileNavPricing) { mobileNavPricing.textContent = 'Pricing'; mobileNavPricing.onclick = () => mobileNav('pricing'); }
+    }
     // Show tester plan card only for the test account (flag set by backend /api/auth/verify)
     const testerCard = document.getElementById('testerPlanCard');
     if (testerCard) testerCard.style.display = user.is_tester ? 'block' : 'none';
@@ -843,6 +859,13 @@ function updateNavUser(user) {
     if (navHistory) navHistory.style.display = 'none';
     if (mobileNavHistory) mobileNavHistory.style.display = 'none';
     if (dropdownHistory) dropdownHistory.style.display = 'none';
+    // Reset pricing nav to default
+    const navPricing = document.getElementById('navPricing');
+    const dropdownPricing = document.getElementById('dropdownPricing');
+    const mobileNavPricing = document.getElementById('mobileNavPricing');
+    if (navPricing) { navPricing.textContent = 'Pricing'; navPricing.onclick = () => window._show && window._show('pricing'); }
+    if (dropdownPricing) { dropdownPricing.textContent = '💳 Pricing'; dropdownPricing.onclick = () => { show('pricing'); closeDropdown(); }; }
+    if (mobileNavPricing) { mobileNavPricing.textContent = 'Pricing'; mobileNavPricing.onclick = () => mobileNav('pricing'); }
     const testerCard = document.getElementById('testerPlanCard');
     if (testerCard) testerCard.style.display = 'none';
   }
@@ -934,6 +957,12 @@ let isBulkMode = false;
 window.addEventListener('load', () => {
   window._show = show;
   updateActiveNav('home');
+
+  // If a session token exists, hide the "2 free extractions" bar immediately — before the
+  // async verify resolves — so paid users never see the free-tier bar flash on load
+  if (getSessionToken()) {
+    document.getElementById('attemptsBar').style.display = 'none';
+  }
 
   // Handle OAuth redirect first
   // M5 — if an exchange is in flight, handleAuthRedirect() owns the session setup;
