@@ -219,39 +219,6 @@ nav {
 .bulk-result-body { display:none; padding:0 14px 14px; border-top:1px solid var(--border); }
 .bulk-result-body.open { display:block; }
 
-/* ── HISTORY PAGE ── */
-.history-wrap { max-width:640px; margin:0 auto; padding:32px 24px 80px; }
-.history-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
-.history-title { font-size:22px; font-weight:800; letter-spacing:-0.02em; }
-.history-quota { font-size:13px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 12px; }
-.history-empty { text-align:center; padding:48px 24px; color:var(--muted); }
-.history-empty-icon { font-size:36px; margin-bottom:12px; }
-.history-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; margin-bottom:10px; overflow:hidden; box-shadow:var(--shadow-sm); }
-.history-card-hdr { display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; user-select:none; }
-.history-card-hdr:hover { background:var(--surface2); }
-.history-card-icon { font-size:18px; flex-shrink:0; }
-.history-card-meta { flex:1; min-width:0; }
-.history-card-name { font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.history-card-sub { font-size:11px; color:var(--muted); margin-top:2px; }
-.history-card-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
-.history-card-count { font-size:11px; font-weight:700; background:var(--accent-light); color:var(--accent); border-radius:8px; padding:2px 8px; }
-.history-card-date { font-size:11px; color:var(--muted); }
-.history-card-body { display:none; border-top:1px solid var(--border); }
-.history-card-body.open { display:block; }
-.history-invoice-row { padding:12px 16px; border-bottom:1px solid var(--border); }
-.history-invoice-row:last-child { border-bottom:none; }
-.history-invoice-title { font-size:12px; font-weight:700; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em; }
-.history-invoice-grid { display:grid; grid-template-columns:auto 1fr; gap:3px 12px; }
-.history-invoice-key { font-size:11px; color:var(--muted); }
-.history-invoice-val { font-size:12px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.history-invoice-actions { display:flex; gap:8px; padding:10px 16px 14px; }
-.history-dl-btn { flex:1; padding:8px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; background:var(--accent); color:#fff; }
-.history-dl-btn:hover { background:#15803d; }
-.history-pagination { display:flex; justify-content:center; gap:8px; margin-top:16px; }
-.history-page-btn { padding:7px 14px; border-radius:8px; border:1px solid var(--border2); font-size:13px; font-weight:600; cursor:pointer; background:var(--surface); font-family:'Outfit',sans-serif; }
-.history-page-btn:hover { background:var(--surface2); }
-.history-page-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-.history-upgrade-notice { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:36px 24px; text-align:center; margin-top:20px; }
 
 .price-popular { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; border-radius:20px; padding:4px 16px; font-size:11px; font-weight:800; letter-spacing:0.05em; white-space:nowrap; }
 .price-name { font-size:12px; font-weight:700; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px; }
@@ -369,7 +336,6 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     <button class="nav-btn ghost" id="navHome" onclick="window._show && window._show('home')">Home</button>
     <button class="nav-btn ghost" id="navPricing" onclick="window._show && window._show('pricing')">Pricing</button>
 
-    <button class="nav-btn ghost" id="navHistory" style="display:none" onclick="window._show && window._show('history')">History</button>
     <button class="nav-btn ghost" id="navTryFree" onclick="window._show && window._show('tool')">Try Free</button>
 <button class="nav-btn outline" id="navAuthBtn" onclick="fakeAuth()">Sign In</button>
 <div class="nav-profile" id="navProfile" style="display:none">
@@ -384,7 +350,6 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
       <div class="nav-dropdown-email" id="dropdownEmail">—</div>
     </div>
     <button class="nav-dropdown-item" onclick="show('tool');closeDropdown()">🔍 Extract Invoice</button>
-    <button class="nav-dropdown-item" id="dropdownHistory" style="display:none" onclick="show('history');closeDropdown()">📋 My Invoices</button>
     <button class="nav-dropdown-item" id="dropdownPricing" onclick="show('pricing');closeDropdown()">💳 Pricing</button>
     <div class="nav-dropdown-divider"></div>
     <button class="nav-dropdown-item danger" onclick="confirmSignOut()">🚪 Sign Out</button>
@@ -397,7 +362,6 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 <div class="nav-mobile-drawer" id="navMobileDrawer">
   <button class="nav-mobile-item" onclick="mobileNav('home')">Home</button>
   <button class="nav-mobile-item" id="mobileNavPricing" onclick="mobileNav('pricing')">Pricing</button>
-  <button class="nav-mobile-item" id="mobileNavHistory" style="display:none" onclick="mobileNav('history')">My Invoices</button>
   <button class="nav-mobile-item" id="mobileNavTool" onclick="mobileNav('tool')">Try Free</button>
   <div class="nav-mobile-divider"></div>
   <button class="nav-mobile-item cta" id="mobileSignIn" onclick="fakeAuth();closeMobileMenu()">Sign In with Google</button>
@@ -568,19 +532,6 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   </div>
 </div>
 
-<!-- HISTORY -->
-<div class="page" id="page-history">
-  <div class="history-wrap">
-    <div class="history-header">
-      <div class="history-title">My Invoices</div>
-      <div class="history-quota" id="historyQuotaLabel"></div>
-    </div>
-    <div id="historyContent">
-      <div class="history-empty"><div class="history-empty-icon">📋</div><div>Loading history...</div></div>
-    </div>
-    <div class="history-pagination" id="historyPagination"></div>
-  </div>
-</div>
 
 <!-- PRICING -->
 <div class="page" id="page-pricing">
@@ -804,9 +755,6 @@ function updateNavUser(user) {
   const mobileSignIn = document.getElementById('mobileSignIn');
   const mobileUserRow = document.getElementById('mobileUserRow');
   const mobileNavTool = document.getElementById('mobileNavTool');
-  const navHistory = document.getElementById('navHistory');
-  const mobileNavHistory = document.getElementById('mobileNavHistory');
-  const dropdownHistory = document.getElementById('dropdownHistory');
   const isPaidUser = user && ['basic', 'starter', 'pro'].includes(user.plan);
   if (user) {
     signInBtn.style.display = 'none';
@@ -825,10 +773,6 @@ function updateNavUser(user) {
     if (document.getElementById('mobileAvatar')) document.getElementById('mobileAvatar').textContent = initials;
     if (document.getElementById('mobileUserName')) document.getElementById('mobileUserName').textContent = user.name || 'Account';
     if (document.getElementById('mobileUserEmail')) document.getElementById('mobileUserEmail').textContent = user.email || '';
-    // Show History only for paid plan users
-    if (navHistory) navHistory.style.display = isPaidUser ? 'block' : 'none';
-    if (mobileNavHistory) mobileNavHistory.style.display = isPaidUser ? 'block' : 'none';
-    if (dropdownHistory) dropdownHistory.style.display = isPaidUser ? 'block' : 'none';
     // Paid users: change "Pricing" nav to "Manage Plan"
     const navPricing = document.getElementById('navPricing');
     const dropdownPricing = document.getElementById('dropdownPricing');
@@ -856,9 +800,6 @@ function updateNavUser(user) {
     if (mobileSignIn) mobileSignIn.style.display = 'block';
     if (mobileUserRow) mobileUserRow.style.display = 'none';
     if (mobileNavTool) mobileNavTool.textContent = 'Try Free';
-    if (navHistory) navHistory.style.display = 'none';
-    if (mobileNavHistory) mobileNavHistory.style.display = 'none';
-    if (dropdownHistory) dropdownHistory.style.display = 'none';
     // Reset pricing nav to default
     const navPricing = document.getElementById('navPricing');
     const dropdownPricing = document.getElementById('dropdownPricing');
@@ -999,12 +940,11 @@ function show(p) {
   if(typeof gtag !== 'undefined') gtag('event', 'page_view', {page_title: p, page_location: window.location.href + '#' + p});
   updateActiveNav(p);
   if(p === 'tool' && !isAuthed) checkAnonQuotaOnLoad();
-  if(p === 'history') loadHistory(1);
 }
 
 function updateActiveNav(p) {
-  const map = { home: 'navHome', pricing: 'navPricing', tool: 'navTryFree', history: 'navHistory' };
-  ['navHome', 'navPricing', 'navTryFree', 'navHistory'].forEach(id => {
+  const map = { home: 'navHome', pricing: 'navPricing', tool: 'navTryFree' };
+  ['navHome', 'navPricing', 'navTryFree'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.className = 'nav-btn ' + (map[p] === id ? 'primary' : 'ghost');
@@ -1396,120 +1336,6 @@ function dlBulkCSV(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download=`billscan_bulk_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-}
-
-// ── HISTORY ──
-let historyCurrentPage = 1;
-let _historyData = [];
-
-function renderHistoryCard(entry, idx) {
-  const invoices = Array.isArray(entry.data) ? entry.data : [entry.data];
-  const date = new Date(entry.created_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-  const time = new Date(entry.created_at).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
-  const firstName = invoices[0]?.vendor?.name || 'Unknown vendor';
-  const totalAmount = invoices.reduce((sum, inv) => sum + (parseFloat(inv.taxes?.grand_total) || 0), 0);
-  const amountStr = totalAmount > 0 ? '₹' + fmt(totalAmount) : '';
-
-  const bodyRows = invoices.map((inv, i) => {
-    const rows = [
-      ['Vendor', inv.vendor?.name], ['GSTIN', inv.vendor?.gstin],
-      ['Invoice No.', inv.invoice?.number], ['Date', inv.invoice?.date],
-      ['Grand Total', inv.taxes?.grand_total ? '₹' + fmt(inv.taxes.grand_total) : null]
-    ].filter(([,v]) => v);
-    return `<div class="history-invoice-row">
-      ${invoices.length > 1 ? `<div class="history-invoice-title">Receipt ${i+1}</div>` : ''}
-      <div class="history-invoice-grid">${rows.map(([k,v]) => `<div class="history-invoice-key">${escHtml(k)}</div><div class="history-invoice-val">${escHtml(v)}</div>`).join('')}</div>
-    </div>`;
-  }).join('');
-
-  return `<div class="history-card">
-    <div class="history-card-hdr" onclick="toggleHistoryCard('hc-${idx}')">
-      <span class="history-card-icon">📄</span>
-      <div class="history-card-meta">
-        <div class="history-card-name" title="${escHtml(entry.file_name || 'Invoice')}">${escHtml(entry.file_name || 'Invoice')}</div>
-        <div class="history-card-sub">${escHtml(firstName)}${amountStr ? ' · ' + amountStr : ''}</div>
-      </div>
-      <div class="history-card-right">
-        <span class="history-card-count">${entry.invoice_count} invoice${entry.invoice_count !== 1 ? 's' : ''}</span>
-        <span class="history-card-date">${date}, ${time}</span>
-      </div>
-    </div>
-    <div class="history-card-body" id="hc-${idx}">
-      ${bodyRows}
-      <div class="history-invoice-actions">
-        <button class="history-dl-btn" onclick="dlHistoryCSV(${idx})">⬇ Download CSV</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function toggleHistoryCard(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.toggle('open');
-}
-
-async function loadHistory(page) {
-  historyCurrentPage = page;
-  const token = getSessionToken();
-  const content = document.getElementById('historyContent');
-  const pagination = document.getElementById('historyPagination');
-  content.innerHTML = '<div class="history-empty"><div class="history-empty-icon">⏳</div><div>Loading...</div></div>';
-  pagination.innerHTML = '';
-  _historyData = [];
-
-  if (!token) {
-    content.innerHTML = '<div class="history-empty"><div class="history-empty-icon">🔐</div><div>Sign in to view your invoice history.</div></div>';
-    return;
-  }
-
-  try {
-    const res = await fetch(`${BACKEND}/api/history?page=${page}`, { headers: { 'x-session-token': token } });
-    const data = await res.json();
-
-    if (!res.ok) {
-      if (data.code === 'upgrade_required') {
-        content.innerHTML = `<div class="history-upgrade-notice"><div style="font-size:32px;margin-bottom:12px">📋</div><div style="font-size:18px;font-weight:800;margin-bottom:8px">Invoice History</div><div style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6">Invoice history is available on paid plans. Upgrade to keep a full record of every invoice you extract.</div><button class="paywall-btn" onclick="show('pricing')" style="margin:0 auto;display:block">See Plans →</button></div>`;
-      } else {
-        content.innerHTML = '<div class="history-empty"><div class="history-empty-icon">⚠️</div><div>' + escHtml(data.error || 'Failed to load history') + '</div></div>';
-      }
-      return;
-    }
-
-    _historyData = data.history || [];
-    const quotaLabel = document.getElementById('historyQuotaLabel');
-    if (quotaLabel) quotaLabel.textContent = (data.total || 0) + ' extraction' + (data.total !== 1 ? 's' : '') + ' total';
-
-    if (!_historyData.length) {
-      content.innerHTML = '<div class="history-empty"><div class="history-empty-icon">📭</div><div style="font-weight:600;margin-bottom:6px">No extractions yet</div><div style="font-size:13px;color:var(--muted)">Your extracted invoices will appear here.</div></div>';
-      return;
-    }
-
-    content.innerHTML = _historyData.map((entry, i) => renderHistoryCard(entry, i)).join('');
-
-    if (data.pages > 1) {
-      let btns = '';
-      for (let p = 1; p <= data.pages; p++) btns += `<button class="history-page-btn${p === page ? ' active' : ''}" onclick="loadHistory(${p})">${p}</button>`;
-      pagination.innerHTML = btns;
-    }
-  } catch(e) {
-    content.innerHTML = '<div class="history-empty"><div class="history-empty-icon">⚠️</div><div>Failed to load history.</div></div>';
-  }
-}
-
-function dlHistoryCSV(idx) {
-  const entry = _historyData[idx];
-  if (!entry) return;
-  const invoices = Array.isArray(entry.data) ? entry.data : [entry.data];
-  const hdr = ['File','Vendor Name','Vendor GSTIN','Vendor Address','Buyer Name','Buyer GSTIN','Invoice No','Invoice Date','Place of Supply','Subtotal','CGST','SGST','IGST','Grand Total','Amount in Words'];
-  const rows = [hdr];
-  invoices.forEach(d => {
-    rows.push([entry.file_name||'',d.vendor?.name||'',d.vendor?.gstin||'',d.vendor?.address||'',d.buyer?.name||'',d.buyer?.gstin||'',d.invoice?.number||'',d.invoice?.date||'',d.invoice?.place_of_supply||'',d.taxes?.subtotal||'',d.taxes?.cgst||'',d.taxes?.sgst||'',d.taxes?.igst||'',d.taxes?.grand_total||'',d.taxes?.total_in_words||'']);
-  });
-  const csv = rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download = `billscan_${(entry.file_name||'invoice').replace(/\.[^.]+$/,'')}_${new Date(entry.created_at).toISOString().slice(0,10)}.csv`;
   a.click();
 }
 
