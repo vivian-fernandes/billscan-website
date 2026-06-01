@@ -604,16 +604,29 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
         <button class="price-cta ghost" onclick="startPayment('pro')">Get Started →</button>
       </div>
 
-      <!-- Tester plan — visible only for vivianfernandes55555@gmail.com -->
-      <div class="price-card" id="testerPlanCard" style="display:none;border-color:#f59e0b;border-width:2px;background:#fffbeb">
-        <div class="price-name" style="color:#d97706">🧪 Tester (Internal)</div>
-        <div class="price-amount">₹1 <span>/ mo</span></div>
-        <div class="price-desc">Internal test plan — not available to the public.</div>
-        <ul class="price-features">
-          <li>Same access as Basic (150/mo)</li>
-          <li>For testing Razorpay flow only</li>
-        </ul>
-        <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706" onclick="startPayment('tester')">Subscribe ₹1 →</button>
+      <!-- Test plans — visible only for tester account (vivianfernandes55555@gmail.com) -->
+      <div id="testerPlanCards" style="display:none;grid-column:1/-1">
+        <div style="font-size:11px;font-weight:700;color:#d97706;letter-spacing:0.1em;text-transform:uppercase;margin:16px 0 10px">🧪 Internal Test Plans</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+          <div class="price-card" style="border-color:#f59e0b;border-width:2px;background:#fffbeb">
+            <div class="price-name" style="color:#d97706">Basic Test</div>
+            <div class="price-amount">₹1 <span>/ mo</span></div>
+            <div class="price-desc">Tests Basic quota (150/mo).</div>
+            <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706;margin-top:auto" onclick="startPayment('basic_test')">Subscribe ₹1 →</button>
+          </div>
+          <div class="price-card" style="border-color:#f59e0b;border-width:2px;background:#fffbeb">
+            <div class="price-name" style="color:#d97706">Starter Test</div>
+            <div class="price-amount">₹2 <span>/ mo</span></div>
+            <div class="price-desc">Tests Starter quota (500/mo).</div>
+            <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706;margin-top:auto" onclick="startPayment('starter_test')">Subscribe ₹2 →</button>
+          </div>
+          <div class="price-card" style="border-color:#f59e0b;border-width:2px;background:#fffbeb">
+            <div class="price-name" style="color:#d97706">Pro Test</div>
+            <div class="price-amount">₹3 <span>/ mo</span></div>
+            <div class="price-desc">Tests Pro quota (2000/mo).</div>
+            <button class="price-cta ghost" style="border-color:#f59e0b;color:#d97706;margin-top:auto" onclick="startPayment('pro_test')">Subscribe ₹3 →</button>
+          </div>
+        </div>
       </div>
     </div>
     <div style="margin-top:24px;background:var(--accent-light);border:1px solid rgba(22,163,74,0.2);border-radius:12px;padding:18px 16px">
@@ -808,11 +821,13 @@ function updateNavUser(user) {
     const mobileNavPricingIcon = document.getElementById('mobileNavPricingIcon');
     const heroSeePricing = document.getElementById('heroSeePricing');
     if (isPaidUser) {
-      if (navPricing) { navPricing.textContent = 'Upgrade Plan'; navPricing.onclick = () => showManagePlanPanel(); }
-      if (dropdownPricing) { dropdownPricing.textContent = '💳 Upgrade Plan'; dropdownPricing.onclick = () => { showManagePlanPanel(); closeDropdown(); }; }
+      const planLabel = user.plan === 'pro' ? 'Manage Plan' : 'Upgrade Plan';
+      const planEmoji = user.plan === 'pro' ? '⚙️' : '⬆️';
+      if (navPricing) { navPricing.textContent = planLabel; navPricing.onclick = () => showManagePlanPanel(); }
+      if (dropdownPricing) { dropdownPricing.textContent = `💳 ${planLabel}`; dropdownPricing.onclick = () => { showManagePlanPanel(); closeDropdown(); }; }
       if (mobileNavPricing) { mobileNavPricing.onclick = () => { closeMobAccount(); showManagePlanPanel(); }; }
-      if (mobileNavPricingLabel) mobileNavPricingLabel.textContent = 'Upgrade';
-      if (mobileNavPricingIcon) mobileNavPricingIcon.textContent = '⬆️';
+      if (mobileNavPricingLabel) mobileNavPricingLabel.textContent = user.plan === 'pro' ? 'Manage' : 'Upgrade';
+      if (mobileNavPricingIcon) mobileNavPricingIcon.textContent = planEmoji;
       if (heroSeePricing) heroSeePricing.style.display = 'none';
       document.getElementById('attemptsBar').style.display = 'none';
     } else {
@@ -823,9 +838,9 @@ function updateNavUser(user) {
       if (mobileNavPricingIcon) mobileNavPricingIcon.textContent = '💳';
       if (heroSeePricing) heroSeePricing.style.display = '';
     }
-    // Show tester plan card only for the test account (flag set by backend /api/auth/verify)
-    const testerCard = document.getElementById('testerPlanCard');
-    if (testerCard) testerCard.style.display = user.is_tester ? 'block' : 'none';
+    // Show tester plan cards only for the test account (flag set by backend /api/auth/verify)
+    const testerCards = document.getElementById('testerPlanCards');
+    if (testerCards) testerCards.style.display = user.is_tester ? 'contents' : 'none';
   } else {
     signInBtn.style.display = 'block';
     profileEl.style.display = 'none';
@@ -850,8 +865,8 @@ function updateNavUser(user) {
     if (mobileNavPricingLabel) mobileNavPricingLabel.textContent = 'Pricing';
     if (mobileNavPricingIcon) mobileNavPricingIcon.textContent = '💳';
     if (heroSeePricing) heroSeePricing.style.display = '';
-    const testerCard = document.getElementById('testerPlanCard');
-    if (testerCard) testerCard.style.display = 'none';
+    const testerCards = document.getElementById('testerPlanCards');
+    if (testerCards) testerCards.style.display = 'none';
   }
 }
 
@@ -1451,13 +1466,46 @@ function showManagePlanPanel() {
   showPlanLimitPanel(currentPlan, null, null);
 }
 
-function confirmSwitchPlan(newPlan) {
+async function confirmSwitchPlan(newPlan) {
   const details = {
-    basic:   'Basic — 150 invoices/month · ₹999/mo',
-    starter: 'Starter — 500 invoices/month · ₹2,999/mo'
+    basic:        'Basic — 150 invoices/month · ₹999/mo',
+    starter:      'Starter — 500 invoices/month · ₹2,999/mo',
+    basic_test:   'Basic Test — ₹1/mo',
+    starter_test: 'Starter Test — ₹2/mo',
+    pro_test:     'Pro Test — ₹3/mo'
   };
-  const msg = `Switch to ${details[newPlan] || newPlan}?\n\nThis starts a new subscription. To avoid double billing, cancel your current subscription from your Razorpay account or contact support@billscan.in.`;
-  if (confirm(msg)) startPayment(newPlan);
+  const label = details[newPlan] || newPlan;
+  if (!confirm(`Switch to ${label}?\n\nYour current subscription will be cancelled immediately and a new one started.`)) return;
+
+  const token = getSessionToken();
+  if (!token) { alert('Please sign in first.'); return; }
+
+  try {
+    const res = await fetch(BACKEND + '/api/payment/switch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-session-token': token },
+      body: JSON.stringify({ plan: newPlan })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to switch plan');
+
+    const user = await verifySession();
+    const options = {
+      key: data.key_id,
+      subscription_id: data.subscription_id,
+      name: 'BillScan AI',
+      description: label,
+      prefill: { email: user?.email, name: user?.name },
+      theme: { color: '#16a34a' },
+      handler: function(response) {
+        alert('🎉 Plan switched successfully!');
+        window.location.reload();
+      }
+    };
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(r) { alert('Payment failed: ' + r.error.description); });
+    rzp.open();
+  } catch(err) { alert('Error: ' + err.message); }
 }
 
 async function startPayment(plan) {
@@ -1481,7 +1529,7 @@ async function startPayment(plan) {
       key: data.key_id,
       subscription_id: data.subscription_id,
       name: 'BillScan AI',
-      description: ({basic:'Basic Plan — ₹999/month', starter:'Starter Plan — ₹2,999/month', pro:'Pro Plan — ₹6,999/month'}[plan] || 'BillScan Plan'),
+      description: ({basic:'Basic Plan — ₹999/month', starter:'Starter Plan — ₹2,999/month', pro:'Pro Plan — ₹6,999/month', tester:'Tester Plan — ₹1/month', basic_test:'Basic Test — ₹1/month', starter_test:'Starter Test — ₹2/month', pro_test:'Pro Test — ₹3/month'}[plan] || 'BillScan Plan'),
       prefill: { email: user.email, name: user.name },
       theme: { color: '#16a34a' },
       handler: function(response) {
