@@ -1440,11 +1440,13 @@ function hidePlanPanel() {
   document.getElementById('planLimitPanel').classList.remove('show');
   document.getElementById('extractorUI').style.display = 'block';
   document.getElementById('attemptsBar').style.display = 'flex';
+  updateActiveNav('tool');
 }
 
 function showManagePlanPanel() {
   if (!currentPlan || !['basic','starter','pro'].includes(currentPlan)) return;
   show('tool');
+  updateActiveNav('pricing'); // highlight Upgrade tab, not Extract
   document.getElementById('extractorUI').style.display = 'none';
   showPlanLimitPanel(currentPlan, null, null);
 }
